@@ -21,6 +21,38 @@ export const asyncRouterMap = [
     },
     redirect: '/system/user',
     children: [
+
+      // business
+      {
+        path: '/business',
+        name: 'business',
+        component: RouteView,
+        meta: {
+          title: '业务管理',
+          icon: 'solution',
+          permission: ['permission']
+        },
+        children: [{
+          path: '/business/list',
+          name: 'BusinessList',
+          component: () => import('@/views/business/list/index'),
+          meta: {
+            title: '我的业务',
+            keepAlive: true,
+            permission: ['table']
+          }
+        }, {
+          path: '/business/list/add',
+          name: 'BusinessListAdd',
+          component: () => import('@/views/business/list/form/index'),
+          meta: {
+            title: '新建业务',
+            keepAlive: true,
+            permission: ['form']
+          }
+        }]
+      },
+
       // system
       {
         path: '/system',

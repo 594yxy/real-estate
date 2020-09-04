@@ -27,6 +27,7 @@ export const asyncRouterMap = [
         path: '/business',
         name: 'business',
         component: RouteView,
+        redirect: '/business/list',
         meta: {
           title: '业务管理',
           icon: 'solution',

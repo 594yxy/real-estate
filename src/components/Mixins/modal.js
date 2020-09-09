@@ -22,22 +22,6 @@ var modalMixin = {
           span: 21
         }
       },
-      labelMinCol: {
-        xs: {
-          span: 24
-        },
-        sm: {
-          span: 6
-        }
-      },
-      wrapperMInCol: {
-        xs: {
-          span: 24
-        },
-        sm: {
-          span: 18
-        }
-      },
       Urls: {
         addUrl: '',
         editUrl: '',

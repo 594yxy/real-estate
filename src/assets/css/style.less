@@ -37,7 +37,7 @@
   }
 }
 
-// 手机端
+// phone
 &.mobile {
   .date-picker-box {
     .till {
@@ -45,6 +45,22 @@
     }
   }
 
+  .avatar-uploader {
+    .ant-upload-select-picture-card {
+      min-width: 200px;
+    }
+  }
+}
+
+// media
+@media (min-width: 1200px) {
+  .row-letter {
+    margin-left: 32px
+  }
+
+  .row-tit {
+    margin-left: 40px;
+  }
 }
 
 // time
@@ -168,7 +184,8 @@
 
 // form
 .my-form {
-  margin: 0 auto;
+  max-width: 1200px;
+  margin-top: 10px;
 
   .ant-tabs-bar {
     margin-bottom: 0;
@@ -185,23 +202,25 @@
 }
 
 .avatar-uploader>.ant-upload {
-  min-width: 220px;
-  height: 120px;
+  min-width: 160px;
+  height: 100px;
+  margin-bottom: 0;
 }
 
 .ant-upload-select-picture-card i {
-  font-size: 32px;
+  font-size: 26px;
   color: #999;
   font-weight: normal;
 }
 
 .ant-upload-select-picture-card .ant-upload-text {
   margin-top: 5px;
+  font-size: 12px;
   color: #666;
 }
 
 .card-wrap {
-  margin: 24px auto 0;
+  margin: 16px auto 0;
 
   .card-header {
     margin-bottom: 12px;
@@ -220,4 +239,14 @@
 
 .my-divider {
   margin: 0;
+}
+
+.read-card-icon {
+  font-size: 20px;
+  margin-top: 3px;
+  cursor: pointer;
+
+  &:hover {
+    color: #222;
+  }
 }

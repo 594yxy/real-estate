@@ -22,10 +22,12 @@ import bootstrap from './core/bootstrap'
 import './core/lazy_use'
 import './permission' // permission control
 import './utils/filter' // global filter
+import Validator from './utils/validate'
 import './global.less'
 import './assets/css/style.less'
 
 Vue.config.productionTip = false
+Vue.prototype.validator = Validator;
 
 // mount axios to `Vue.$http` and `this.$http`
 Vue.use(VueAxios)

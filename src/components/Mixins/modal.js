@@ -55,7 +55,12 @@ var modalMixin = {
             required: true,
             message: '此字段为必填项！'
           }]
-        }
+        },
+        phone: {
+          rules: [{
+            validator: this.validator.validatePhone
+          }]
+        },
       },
       fileList: [],
       uploading: false,
@@ -134,7 +139,8 @@ var modalMixin = {
         if (!errors) {
           this.beforeSubmit(values)
           let formData = Object.assign(this.model, values);
-          axios({
+          console.log(formData)
+          /* axios({
             url: this.model.id ? (this.Urls.editUrl + this.model.id) : this.Urls.addUrl,
             method: 'post',
             data: formData
@@ -154,7 +160,7 @@ var modalMixin = {
             }
           }).catch(() => {
             this.localLoading = false
-          })
+          }) */
         } else {
           this.confirmLoading = false
         }

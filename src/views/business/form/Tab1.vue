@@ -9,7 +9,7 @@
         @edit="onTabEdit"
       >
         <!-- <template slot="tabBarExtraContent">
-        <span class="extra">添加共同购房人</span>
+        <div class="tab-extra">添加共同购房人</div>
         </template>-->
         <a-tab-pane
           v-for="(pane,index) in model.buyerList"
@@ -734,9 +734,8 @@ export default {
 </script>
 
 <style lang="less" scoped>
-.extra {
+.tab-extra {
   display: inline-block;
   vertical-align: 3px;
-  margin-left: 5px;
 }
 </style>

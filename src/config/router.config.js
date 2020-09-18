@@ -45,7 +45,7 @@ export const asyncRouterMap = [
         }, {
           path: '/business/list/add',
           name: 'BusinessListAdd',
-          component: () => import('@/views/business/list/form/index'),
+          component: () => import('@/views/business/form/index'),
           meta: {
             title: '新建业务',
             keepAlive: true,

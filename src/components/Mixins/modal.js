@@ -5,6 +5,11 @@ import moment from 'moment'
 
 var modalMixin = {
   data() {
+    function getBase64(file, callback) {
+      const reader = new FileReader()
+      reader.readAsDataURL(file)
+      reader.addEventListener('load', () => callback(reader.result))
+    }
     return {
       labelCol: {
         xs: {
@@ -29,10 +34,11 @@ var modalMixin = {
         imgListUrl: '/file/api/file/batchSelect',
         uploadFileUrl: '/file/api/file/upload',
         delFileUrl: '/file/api/file/delete/',
+        batchDelFileUrl: '/file/api/file/removes',
         projectByIdUrl: '/biz/oaProject/get/',
-        dictTypeUrl: '/ida/api/dict/typeList',
+        dictTypeUrl: '/api/dict/typeList',
         editKeyValueUrl: '/api/setting/update/',
-        keyValueListUrl: '/api/setting/list'
+        keyValueListUrl: '/api/setting/list',
       },
       form: this.$form.createForm(this),
       visible: false,
@@ -58,15 +64,19 @@ var modalMixin = {
         },
         phone: {
           rules: [{
+            required: true,
+            message: '请输入您的联系电话'
+          }, {
             validator: this.validator.validatePhone
           }]
         },
       },
       fileList: [],
       uploading: false,
-      singleFile: false,
       roleMark: localStorage.getItem('mark') || "",
-      userId: localStorage.getItem('userId') || ""
+      userId: localStorage.getItem('userId') || "",
+      // gender
+      genderList: []
     }
   },
   filters: {
@@ -104,7 +114,7 @@ var modalMixin = {
       this.beforeOpen(record)
       this.form.resetFields()
       this.visible = true
-      this.fillForm(record)
+      this.fillForm(record.id)
     },
 
     setForm(data) {
@@ -112,10 +122,10 @@ var modalMixin = {
     },
 
     // 详情表单
-    fillForm(record) {
+    fillForm(id) {
       this.confirmLoading = true
       axios({
-        url: this.Urls.getByIdUrl + record.id,
+        url: this.Urls.getByIdUrl + id,
         method: 'get'
       }).then(res => {
         this.confirmLoading = false
@@ -136,34 +146,34 @@ var modalMixin = {
       e.preventDefault();
       this.confirmLoading = true
       this.form.validateFields((errors, values) => {
-        if (!errors) {
-          this.beforeSubmit(values)
-          let formData = Object.assign(this.model, values);
-          console.log(formData)
-          /* axios({
-            url: this.model.id ? (this.Urls.editUrl + this.model.id) : this.Urls.addUrl,
-            method: 'post',
-            data: formData
-          }).then(res => {
-            this.confirmLoading = false
-            if (res.code == 0) {
-              this.$notification.success({
-                message: this.model.id ? this.tips.edit : this.tips.add
-              })
-              this.visible = false
-              this.afterSubmit()
-              this.$emit('ok')
-            } else {
-              this.$notification.error({
-                message: res.msg
-              })
-            }
-          }).catch(() => {
-            this.localLoading = false
-          }) */
-        } else {
+        // if (!errors) {
+        this.beforeSubmit(values)
+        let formData = Object.assign(this.model, values);
+        console.log('form value', formData)
+        /* axios({
+          url: this.model.id ? (this.Urls.editUrl + this.model.id) : this.Urls.addUrl,
+          method: 'post',
+          data: formData
+        }).then(res => {
           this.confirmLoading = false
-        }
+          if (res.code == 0) {
+            this.$notification.success({
+              message: this.model.id ? this.tips.edit : this.tips.add
+            })
+            this.visible = false
+            this.afterSubmit()
+            this.$emit('ok')
+          } else {
+            this.$notification.error({
+              message: res.msg
+            })
+          }
+        }).catch(() => {
+          this.localLoading = false
+        }) */
+        /* } else {
+          this.confirmLoading = false
+        } */
       })
     },
     //提交设置
@@ -304,6 +314,7 @@ var modalMixin = {
     },
     // 文件上传
     beforeUpload(file) {
+      console.log('上传', file)
       const isXLSX = file.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
       const isDOCX = file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
       const isPDF = file.type === 'application/pdf';
@@ -314,17 +325,13 @@ var modalMixin = {
         return false
       }
 
-      const isLt20M = file.size / 1024 / 1024 < 20
-      if (!isLt20M) {
-        this.$message.error('文件大小不能超过20M!')
+      const isLt2M = file.size / 1024 / 1024 < 2
+      if (!isLt2M) {
+        this.$message.error('文件大小不能超过2M!')
         return false
       }
-      if (this.fileList.length > 0 && !this.singleFile) {
-        this.$message.error('上传文件数量只限制1个')
-        // this.handleFileRemove(this.fileList[0])
-        return false
-      }
-      this.uploadFile(file)
+      // this.uploadFile(file)
+      this.fileList = [...this.fileList, file];
       return false
     },
     uploadFile(file) {
@@ -366,12 +373,15 @@ var modalMixin = {
 
     // 预览图片
     handlePreview(file) {
-      if (file.ext == 'jpg' || file.ext == 'jpeg' || file.ext == 'png') {
+      console.log('预览', file)
+      getBase64(file, (imageUrl) => {
+        // this.imageUrl = imageUrl
+      })
+      /* if (file.ext == 'jpg' || file.ext == 'jpeg' || file.ext == 'png') {
         this.$refs.viewModal.handleView(file.url)
       } else if (file.ext == 'docx' || file.ext == 'pdf' || file.ext == 'xlsx') {
         this.$refs.viewModal.handleFile(file.url)
-      }
-
+      } */
     },
     // 删除图片
     handleFileRemove(file) {
@@ -393,6 +403,18 @@ var modalMixin = {
           })
         }
       })
+    },
+    // 提交如果报错 删除所有图片
+    batchDelImg(ids) {
+      axios({
+        url: this.Urls.batchDelFileUrl,
+        method: 'post',
+        data: {
+          ids: ids.join()
+        }
+      }).then(res => {
+        if (res.code == 0) {} else {}
+      }).catch(() => {})
     },
     // 不可选择的时间
     disabledDate(current) {

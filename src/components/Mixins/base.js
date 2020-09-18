@@ -59,7 +59,8 @@ var baseMixin = {
     rowSelection() {
       return {
         selectedRowKeys: this.selectedRowKeys,
-        onChange: this.onSelectChange
+        onChange: this.onSelectChange,
+        type: 'radio'
       }
     }
   },
@@ -178,6 +179,7 @@ var baseMixin = {
 
     // table勾选时
     onSelectChange(selectedRowKeys, selectionRows) {
+      console.log(selectedRowKeys, selectionRows)
       this.selectedRowKeys = selectedRowKeys
       this.selectionRows = selectionRows
     },

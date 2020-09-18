@@ -4,55 +4,77 @@
       <div class="table-page-search-wrapper">
         <a-form layout="inline">
           <a-row :gutter="24">
-            <a-col :md="7" :sm="24">
+            <a-col :xl="6" :md="12" :sm="24">
               <a-form-item label="业务编号">
-                <a-input allowClear v-model="queryParam.condition.keyWord" placeholder="业务编号" />
+                <a-input allowClear v-model="queryParam.condition.keyWord" placeholder="请输入业务编号" />
               </a-form-item>
             </a-col>
-            <a-col :md="7" :sm="24">
+            <a-col :xl="6" :md="12" :sm="24">
               <a-form-item label="买方/卖方">
-                <a-input allowClear v-model="queryParam.condition.keyWord" placeholder="买方/卖方" />
+                <a-input
+                  allowClear
+                  v-model="queryParam.condition.keyWord"
+                  placeholder="请输入买方或者卖方的姓名"
+                />
               </a-form-item>
             </a-col>
-            <template v-if="advanced">
-              <a-col :md="10" :sm="24">
-                <a-form-item label="办理时间" class="date-picker-box">
-                  <j-date @start="handleStartTime" @end="handleEndTime" v-if="isShowDate"></j-date>
-                </a-form-item>
-              </a-col>
-              <a-col :md="7" :sm="24">
-                <a-form-item label="房产证号">
-                  <a-input allowClear v-model="queryParam.condition.keyWord" placeholder="业务编号" />
-                </a-form-item>
-              </a-col>
-              <a-col :md="7" :sm="24">
-                <a-form-item label="身份证号">
-                  <a-input allowClear v-model="queryParam.condition.keyWord" placeholder="业务编号" />
-                </a-form-item>
-              </a-col>
-              <a-col :md="6" :sm="24">
-                <a-form-item label="流程节点">
-                  <a-select allowClear v-model="queryParam.condition.auditStatus" placeholder="请选择">
-                    <a-select-option
-                      v-for="item in Object.keys(statusMap)"
-                      :value="item"
-                      :key="item"
-                    >{{statusMap[item].text}}</a-select-option>
-                  </a-select>
-                </a-form-item>
-              </a-col>
-            </template>
-            <a-col :md="!advanced && 3 || 24" :sm="24">
-              <span
-                class="table-page-search-submitButtons"
-                :style="advanced && { float: 'right', overflow: 'hidden' } || {} "
-              >
+            <a-col :xl="12" :md="24" :sm="24">
+              <a-form-item label="办理时间" class="date-picker-box">
+                <j-date @start="handleStartTime" @end="handleEndTime" v-if="isShowDate"></j-date>
+              </a-form-item>
+            </a-col>
+            <a-col :xl="6" :md="12" :sm="24">
+              <a-form-item label="房产证号">
+                <a-input allowClear v-model="queryParam.condition.keyWord" placeholder="请输入房产证号" />
+              </a-form-item>
+            </a-col>
+            <a-col :xl="6" :md="12" :sm="24">
+              <a-form-item label="身份证号">
+                <a-input allowClear v-model="queryParam.condition.keyWord" placeholder="请输入身份证号" />
+              </a-form-item>
+            </a-col>
+            <a-col :xl="6" :md="12" :sm="24">
+              <a-form-item label="流程节点">
+                <a-select allowClear v-model="queryParam.condition.auditStatus" placeholder="请选择">
+                  <a-select-option
+                    v-for="item in Object.keys(statusMap)"
+                    :value="item"
+                    :key="item"
+                  >{{statusMap[item].text}}</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :xl="6" :md="12" :sm="24">
+              <a-form-item label="承办部门">
+                <a-select allowClear v-model="queryParam.condition.auditStatus" placeholder="请选择">
+                  <a-select-option
+                    v-for="item in Object.keys(statusMap)"
+                    :value="item"
+                    :key="item"
+                  >{{statusMap[item].text}}</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :xl="6" :md="12" :sm="24">
+              <a-form-item label="业务类型">
+                <a-select allowClear v-model="queryParam.condition.auditStatus" placeholder="请选择">
+                  <a-select-option
+                    v-for="item in Object.keys(statusMap)"
+                    :value="item"
+                    :key="item"
+                  >{{statusMap[item].text}}</a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :xl="6" :md="12" :sm="24">
+              <a-form-item label="评估公司">
+                <a-input allowClear v-model="queryParam.condition.keyWord" placeholder="请输入评估公司" />
+              </a-form-item>
+            </a-col>
+            <a-col :xl="12" :md="24" :sm="24">
+              <span class="table-page-search-submitButtons" style="float:right; overflow: 'hidden">
                 <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
                 <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
-                <a @click="toggleAdvanced" style="margin-left: 8px">
-                  {{ advanced ? '收起' : '展开' }}
-                  <a-icon :type="advanced ? 'up' : 'down'" />
-                </a>
               </span>
             </a-col>
           </a-row>
@@ -61,7 +83,8 @@
       <div class="table-operator">
         <a-button type="primary" icon="plus" @click="handleAdd" class="mr-8">新建业务</a-button>
         <a-button-group>
-          <a-button>编辑</a-button>
+          <a-button @click="handleEdit">编辑</a-button>
+          <a-button>提交</a-button>
           <a-button>转移</a-button>
           <a-button>提交财务入账</a-button>
           <a-button>提交财务划款</a-button>
@@ -75,6 +98,7 @@
         rowKey="id"
         :pagination="pagination"
         size="middle"
+        :row-selection="rowSelection"
       >
         <template v-for="col in ['balance', 'allAmount']" :slot="col" slot-scope="text">
           <div :key="col">
@@ -103,7 +127,7 @@
 
 <script>
 import baseMixin from '@/components/Mixins/base'
-import indexMixin from './mixin/index'
+import indexMixin from './modules/index'
 import { Ellipsis } from '@/components'
 import JDate from '@/components/JDate/index'
 

@@ -30,7 +30,6 @@ function getBase64(file, callback) {
 import { axios } from '@/utils/request'
 export default {
   name: 'Upload',
-  components: {},
   props: {
     tip: {
       type: String,
@@ -118,7 +117,7 @@ export default {
         })
     },
     // 回填图片
-    getSingleImgUrl(ids) {
+    getImgUrl(ids) {
       axios({
         url: this.Urls.imgListUrl,
         method: 'get',
@@ -136,7 +135,7 @@ export default {
   },
   created() {
     if (this.imageId) {
-      this.getSingleImgUrl(this.imageId)
+      this.getImgUrl(this.imageId)
     }
   },
   mounted() {},

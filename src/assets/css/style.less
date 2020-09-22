@@ -147,6 +147,14 @@
   margin-bottom: 0;
 }
 
+.contextmenu,
+.ant-menu-vertical {
+  .ant-menu-item {
+    height: 30px;
+    line-height: 30px;
+  }
+}
+
 .table-operate {
   position: absolute;
   left: 24px;
@@ -369,10 +377,16 @@
 .my-card-tabs.ant-tabs-card>.ant-tabs-card-bar {
   border-bottom: none;
 
+  .ant-tabs-nav-scroll {
+    white-space: normal !important
+  }
+
   .ant-tabs-tab {
-    width: 108px;
+    width: 150px;
+    height: auto;
+    line-height: 22px;
+    padding: 4px 12px;
     text-align: center;
-    margin-right: 0;
     border-bottom: 1px solid #e8e8e8;
   }
 

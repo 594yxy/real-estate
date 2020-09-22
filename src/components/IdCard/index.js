@@ -1,4 +1,5 @@
 import axios from 'axios'
+import qs from 'qs'
 import {
   message,
   Modal
@@ -133,4 +134,78 @@ export default {
       class: 'test',
     });
   },
+  // 设置银行信息
+  setBankData(img) {
+    const tencentcloud = require("tencentcloud-sdk-nodejs");
+
+    const OcrClient = tencentcloud.ocr.v20181119.Client;
+    const models = tencentcloud.ocr.v20181119.Models;
+
+    const Credential = tencentcloud.common.Credential;
+    const ClientProfile = tencentcloud.common.ClientProfile;
+    const HttpProfile = tencentcloud.common.HttpProfile;
+
+    let cred = new Credential("AKID948vQyHH2WjgLinjKYVfX7PQBgurYptf", "d06XlMjqgFTBdruhCPKxKhdJ6cqrb6KG");
+    let httpProfile = new HttpProfile();
+    httpProfile.endpoint = "ocr.tencentcloudapi.com";
+    httpProfile.reqHeaders = {
+      mode: 'no-cors'
+    };
+    let clientProfile = new ClientProfile();
+    clientProfile.httpProfile = httpProfile;
+    let client = new OcrClient(cred, "ap-guangzhou", clientProfile);
+
+    let req = new models.BankCardOCRRequest();
+
+    let params = '{\"ImageBase64\":\"' + img + '\"}'
+    req.from_json_string(params);
+
+    client.BankCardOCR(req, function (errMsg, response) {
+      if (errMsg) {
+        console.log(errMsg);
+        return;
+      }
+      console.log('12121', response.to_json_string());
+    });
+
+
+
+
+
+
+
+
+    /* var dataObj = qs.stringify({
+      Action: 'BankCardOCR',
+      Version: '2018-11-19',
+      Region: 'ap-beijing',
+      ImageBase64: img,
+      SecretId: 'AKID948vQyHH2WjgLinjKYVfX7PQBgurYptf',
+      SecretKey: 'd06XlMjqgFTBdruhCPKxKhdJ6cqrb6KG'
+    })
+    return new Promise((resolve, reject) => {
+      axios({
+        url: '/ocr',
+        method: 'post',
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded'
+        },
+        data: dataObj
+      }).then(res => {
+        console.log('银行信息', res.data)
+        if (!res.data.dev) {
+          let data = res.data.replace(/\\/g, "/");
+          let result = JSON.parse(data);
+          if (result.ret == 0) {
+            resolve(result.Certificate)
+          }
+        } else if (this.interfaceResult[res.data.ret]) {
+          message.error(this.interfaceResult[res.data.ret].mean)
+        }
+      }).catch((err) => {
+        // this.downloadDrive()
+      })
+    }) */
+  },
+
 }

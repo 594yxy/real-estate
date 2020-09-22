@@ -5,7 +5,7 @@ import pick from 'lodash.pick'
 
 var indexMixin = {
   data() {
-    let panes = [{
+    const panes = [{
         key: '1',
         title: '买卖合同',
         content: '1',
@@ -57,12 +57,12 @@ var indexMixin = {
       },
       {
         key: '11',
-        title: '未再婚声明书（买方',
+        title: '　未再婚声明书　（买方）',
         content: '1',
       },
       {
         key: '12',
-        title: '未婚声明书（买方）',
+        title: '　未婚声明书　（买方）',
         content: '1',
       },
       {
@@ -80,7 +80,7 @@ var indexMixin = {
         title: '权证收条',
         content: '1',
       },
-    ]
+    ];
     return {
       activeKey: panes[0].key,
       panes,

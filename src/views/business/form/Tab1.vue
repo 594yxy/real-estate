@@ -1,13 +1,7 @@
 <template>
-  <a-form-model ref="ruleForm" :model="model" class="my-form" @submit="handleSubmit">
+  <a-form-model ref="ruleForm" :model="model" class="my-form">
     <a-spin :spinning="confirmLoading">
-      <a-tabs
-        v-model="activeKey"
-        type="editable-card"
-        size="small"
-        @change="tabChange"
-        @edit="onTabEdit"
-      >
+      <a-tabs v-model="activeKey" type="editable-card" size="small" @edit="onTabEdit">
         <!-- <template slot="tabBarExtraContent">
         <div class="tab-extra">添加共同购房人</div>
         </template>-->
@@ -33,7 +27,7 @@
                       :prop="'buyerList['+index+'].buyerName'"
                       :rules="rules.must"
                     >
-                      <a-input placeholder="请输入姓名" read-only v-model="pane.buyerName">
+                      <a-input placeholder="请输入姓名" v-model="pane.buyerName">
                         <a-tooltip slot="addonAfter" title="点击读取信息">
                           <a-icon
                             type="idcard"
@@ -50,7 +44,7 @@
                       :wrapperCol="wrapperCol"
                       label="性别"
                       :prop="'buyerList['+index+'].buyerGender'"
-                      :rules="rules.must"
+                      :rules="rules.select"
                     >
                       <a-select placeholder="请选择" v-model="pane.buyerGender">
                         <a-select-option v-for="item in genderList" :key="item.key">{{ item.value }}</a-select-option>
@@ -65,7 +59,7 @@
                       :prop="'buyerList['+index+'].buyerIdcard'"
                       :rules="rules.must"
                     >
-                      <a-input placeholder="请输入身份证号码" read-only v-model="pane.buyerIdcard" />
+                      <a-input placeholder="请输入身份证号码" v-model="pane.buyerIdcard" />
                     </a-form-model-item>
                   </a-col>
                   <a-col :xs="24" :sm="24" :md="12" :xl="8">
@@ -96,13 +90,9 @@
                       :wrapperCol="wrapperCol"
                       label="婚姻情况"
                       :prop="'buyerList['+index+'].buyerMarriage'"
-                      :rules="rules.must"
+                      :rules="rules.select"
                     >
-                      <a-select
-                        placeholder="请选择"
-                        v-model="pane.buyerMarriage"
-                        @change="maritalStatusChange"
-                      >
+                      <a-select placeholder="请选择" v-model="pane.buyerMarriage">
                         <a-select-option
                           v-for="item in maritalStatusList"
                           :key="item.key"
@@ -121,7 +111,7 @@
                       :prop="'buyerList['+index+'].buyerAddr'"
                       :rules="rules.must"
                     >
-                      <a-input read-only placeholder="请输入你的详细地址" v-model="pane.buyerAddr" />
+                      <a-input placeholder="请输入你的详细地址" v-model="pane.buyerAddr" />
                     </a-form-model-item>
                   </a-col>
                 </a-row>
@@ -256,7 +246,7 @@
                     <a-col :xs="24" :sm="24" :md="12" :xl="5">
                       <a-form-model-item
                         :prop="'buyerList['+index+'].buyerAddrProv'"
-                        :rules="rules.must"
+                        :rules="rules.select"
                       >
                         <a-select
                           show-search
@@ -272,7 +262,7 @@
                     <a-col :xs="24" :sm="24" :md="12" :xl="6">
                       <a-form-model-item
                         :prop="'buyerList['+index+'].buyerAddrCity'"
-                        :rules="rules.must"
+                        :rules="rules.select"
                       >
                         <a-select
                           show-search
@@ -288,7 +278,7 @@
                     <a-col :xs="24" :sm="24" :md="12" :xl="5">
                       <a-form-model-item
                         :prop="'buyerList['+index+'].buyerAddrDistc'"
-                        :rules="rules.must"
+                        :rules="rules.select"
                       >
                         <a-select
                           show-search
@@ -364,7 +354,7 @@
                       :prop="'buyerList['+index+'].spouseName'"
                       :rules="rules.must"
                     >
-                      <a-input placeholder="请输入姓名" read-only v-model="pane.spouseName">
+                      <a-input placeholder="请输入姓名" v-model="pane.spouseName">
                         <a-tooltip slot="addonAfter" title="点击读取信息">
                           <a-icon
                             type="idcard"
@@ -381,7 +371,7 @@
                       :wrapperCol="wrapperCol"
                       label="性别"
                       :prop="'buyerList['+index+'].spouseGender'"
-                      :rules="rules.must"
+                      :rules="rules.select"
                     >
                       <a-select placeholder="请选择" v-model="pane.spouseGender">
                         <a-select-option v-for="item in genderList" :key="item.key">{{ item.value }}</a-select-option>
@@ -396,7 +386,7 @@
                       :prop="'buyerList['+index+'].spouseIdcard'"
                       :rules="rules.must"
                     >
-                      <a-input placeholder="请输入身份证号码" read-only v-model="pane.spouseIdcard" />
+                      <a-input placeholder="请输入身份证号码" v-model="pane.spouseIdcard" />
                     </a-form-model-item>
                   </a-col>
                   <a-col :xs="24" :sm="24" :md="12" :xl="8">
@@ -436,7 +426,7 @@
                       :prop="'buyerList['+index+'].spouseAddr'"
                       :rules="rules.must"
                     >
-                      <a-input read-only placeholder="请输入你的详细地址" v-model="pane.spouseAddr" />
+                      <a-input placeholder="请输入你的详细地址" v-model="pane.spouseAddr" />
                     </a-form-model-item>
                   </a-col>
                 </a-row>
@@ -652,9 +642,15 @@
                       :prop="'buyerList['+index+'].bankAccountList['+bankIndex+'].bankCardNo'"
                       :rules="rules.must"
                     >
-                      <a-input placeholder="请输入卡号" v-model="bank.bankCardNo">
-                        <a-tooltip slot="addonAfter" title="点击获取信息">
-                          <a-icon type="camera" class="read-card-icon" />
+                      <a-input placeholder="请输入卡号" :max-length="20" v-model="bank.bankCardNo">
+                        <a-tooltip slot="addonAfter" title="点击上传识别">
+                          <a-upload
+                            name="file"
+                            :show-upload-list="false"
+                            :before-upload="getBankInfo"
+                          >
+                            <a-icon type="camera" class="read-card-icon" />
+                          </a-upload>
                         </a-tooltip>
                       </a-input>
                     </a-form-model-item>
@@ -714,14 +710,14 @@
       <!-- submit -->
       <a-form-model-item class="form-btn" style="margin-top: 24px">
         <a-button @click.native="handleReturn">取 消</a-button>
-        <a-button type="primary" html-type="submit" style="margin-left: 24px">保 存</a-button>
+        <a-button type="primary" @click="handleOk" style="margin-left: 24px">保 存</a-button>
       </a-form-model-item>
     </a-spin>
   </a-form-model>
 </template>
 
 <script>
-import modalMixin from '@/components/Mixins/modal'
+import modalMixin from '@/components/Mixins/form'
 import indexMixin from './modules/Tab1'
 import UploadImg from '@/components/Upload/index'
 export default {

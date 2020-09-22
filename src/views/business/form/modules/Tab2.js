@@ -5,6 +5,12 @@ import moment from 'moment'
 import IdCard from '@/components/IdCard/index'
 
 var indexMixin = {
+  props: {
+    info: {
+      type: Object,
+      default: () => {}
+    }
+  },
   data() {
     const salerList = [{
       title: '卖方信息',
@@ -19,8 +25,7 @@ var indexMixin = {
     return {
       Urls: {
         addUrl: '/api/business/temp',
-        editUrl: '/api/business/update/',
-        getByIdUrl: '/api/business/all/get/'
+        editUrl: '/api/business/update/'
       },
       labelCol: {
         xxl: {
@@ -120,83 +125,75 @@ var indexMixin = {
         salerList,
       },
       activeKey: salerList[0].tabKey,
-      newTabIndex: 1,
-      rules: {
-        must: {
-          required: true,
-          message: '此字段为必填！',
-          trigger: 'blur'
-        },
-        phone: [{
-          required: true,
-          message: '此字段为必填！',
-          trigger: 'blur'
-        }, {
-          validator: this.validator.validatePhone,
-          trigger: 'change'
-        }],
-      }
+      newTabIndex: 1
     }
   },
   filters: {},
   created() {
+    this.model = this.info
     this.getDictData('gender', 'genderList')
-    this.model.id = this.$route.query.id
     if (this.model.id) {
-      this.fillForm(this.model.id)
+      this.setForm()
     }
   },
   methods: {
-    // 提交
-    handleSubmit(e) {
-      e.preventDefault();
-      this.$refs.ruleForm.validate(valid => {
-        this.confirmLoading = true
-        // if (valid) {
-        console.log('submit!', this.model)
-        axios({
-          url: this.model.id ? (this.Urls.editUrl + this.model.id) : this.Urls.addUrl,
-          method: 'post',
-          data: this.model
-        }).then(res => {
-          this.confirmLoading = false
-          if (res.code == 0) {
-            this.$notification.success({
-              message: this.model.id ? this.tips.edit : this.tips.add
-            })
-            this.visible = false
-            this.afterSubmit()
-            this.$emit('ok')
-          } else {
-            this.$notification.error({
-              message: res.msg
-            })
-          }
-        }).catch(() => {
-          this.confirmLoading = false
-        })
-        /* } else {
-          this.confirmLoading = false
-          return false;
-        } */
-      });
-    },
-
     // 赋值
     setForm(data) {
-      console.log('form', data)
-      this.model.salerList = data.salerList
-      this.model.salerList.map((item, index) => {
-        item.title = "卖方信息"
-        item.tabKey = index
-      })
+      console.log('卖方信息', this.model.salerList)
+      if (this.model.salerList && this.model.salerList.length > 0) {
+        this.model.salerList.map((item, index) => {
+          item.title = index == 0 ? "卖房信息" : "共有人"
+          item.closable = index == 0 ? false : true
+          item.tabKey = index
+          if (item.salerIdcardValidity && typeof (item.salerIdcardValidity) == 'string') {
+            item.salerIdcardValidity = item.salerIdcardValidity.split(",")
+          }
+          if (item.assignor && item.assignor.personIdcardValidity && typeof (item.assignor.personIdcardValidity) == 'string') {
+            item.assignor.personIdcardValidity = item.assignor.personIdcardValidity.split(",")
+          }
+          if (item.guardianList.length > 0) {
+            item.guardianList.map((key, k) => {
+              if (key.personIdcardValidity && typeof (key.personIdcardValidity) == 'string')
+                key.personIdcardValidity = key.personIdcardValidity.split(",")
+            })
+          }
+        })
+      }
     },
-
-    // tab change
-    tabChange(key) {
-      // this.setFormValue(key)
+    afterSubmit(data) {
+      this.model.id = data.id
+      this.model = data
+      this.setForm()
     },
-
+    // 有效期格式处理
+    beforeSubmit(form) {
+      if (form.salerList && form.salerList.length > 0) {
+        form.salerList.map((item, index) => {
+          if (item.salerIdcardValidity) {
+            item.salerIdcardValidity = item.salerIdcardValidity.join()
+          }
+          if (item.assignor && item.assignor.personIdcardValidity) {
+            item.assignor.personIdcardValidity = item.assignor.personIdcardValidity.join()
+          }
+          if (item.guardianList.length > 0) {
+            item.guardianList.map((key, k) => {
+              key.personIdcardValidity = key.personIdcardValidity.join()
+            })
+          }
+        })
+      }
+      if (form.buyerList && form.buyerList.length > 0) {
+        form.buyerList.map((item, index) => {
+          if (item.buyerIdcardValidity) {
+            item.buyerIdcardValidity = item.buyerIdcardValidity.join()
+          }
+          if (item.spouseIdcardValidity) {
+            item.spouseIdcardValidity.join()
+          }
+        })
+      }
+      return form
+    },
     onTabEdit(targetKey, action) {
       this[action](targetKey)
     },
@@ -205,7 +202,7 @@ var indexMixin = {
       const panes = this.model.salerList;
       const activeKey = `${this.newTabIndex++}`;
       panes.push({
-        title: `共同人`,
+        title: `共有人`,
         tabKey: activeKey,
         guardianList: [],
         assignor: null,
@@ -218,14 +215,16 @@ var indexMixin = {
     },
     // remove Tab
     remove(targetKey) {
+      console.log(targetKey)
       let activeKey = this.activeKey;
       let lastIndex;
-      this.model.salerList.forEach((pane, i) => {
+      const panes = this.model.salerList;
+      panes.forEach((pane, i) => {
         if (pane.tabKey === targetKey) {
           lastIndex = i - 1;
         }
       });
-      const panes = this.model.salerList.filter(pane => pane.tabKey !== targetKey);
+      panes.splice(targetKey, 1)
       if (panes.length && activeKey === targetKey) {
         if (lastIndex >= 0) {
           activeKey = panes[lastIndex].tabKey;
@@ -236,10 +235,21 @@ var indexMixin = {
       this.model.salerList = panes;
       this.activeKey = activeKey;
     },
-
+    handleReturn() {
+      this.$emit('prevStep')
+    },
     // 第三方垫付
     addThirdPay() {
-      this.$refs.modalForm.add()
+      if (this.model.thirdPayment) {
+        this.$refs.thirdForm.edit(this.model)
+        this.$refs.thirdForm.dialogStatus = 'edit'
+      } else {
+        this.$refs.thirdForm.edit(this.model)
+        this.$refs.thirdForm.dialogStatus = 'add'
+      }
+    },
+    setThirdValue(data) {
+      this.model.thirdPayment = data.thirdPayment
     },
 
     // 委托人
@@ -274,6 +284,14 @@ var indexMixin = {
         return
       }
       this.model.salerList[index].bankAccountList.splice(keyIndex, 1)
+    },
+    // 获取银行信息
+    async getBankInfo(file) {
+      console.log('银行图片', file)
+      let base64 = await this.getBase64(file)
+      let data = await IdCard.setBankData(base64)
+      console.log('bank Info', data)
+      return false
     },
 
     // 获取身份证信息

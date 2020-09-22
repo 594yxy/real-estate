@@ -4,8 +4,18 @@ import {
 import pick from 'lodash.pick'
 
 var indexMixin = {
+  props: {
+    info: {
+      type: Object,
+      default: () => {}
+    }
+  },
   data() {
     return {
+      Urls: {
+        addUrl: '/api/business/temp',
+        editUrl: '/api/business/update/'
+      },
       labelCol: {
         xxl: {
           span: 8
@@ -57,18 +67,27 @@ var indexMixin = {
         },
       },
       gutter: 15,
-      downPayList: []
+      downPayList: [],
+      model: {
+        loan: {},
+        property: {}
+      },
+      loanTypeList: [],
+      bankList: []
     }
   },
   filters: {},
-  created() {},
+  created() {
+    this.model = this.info
+    this.getDictData('loan_type', 'loanTypeList')
+    this.getDictData('bank_code', 'bankList')
+  },
   methods: {
-    // submit
-    handleSubmit() {
-      this.form.validateFields((err, values) => {
-        console.log(values)
-        if (!err) {}
-      })
+    afterSubmit(data) {
+      this.model = data
+    },
+    handleReturn() {
+      this.$emit('prevStep')
     },
     // 追加首付
     addDownPayAmount() {
@@ -80,7 +99,15 @@ var indexMixin = {
     // 计算贷款额度
     handleCalculate() {
       this.$refs.loadModal.add()
-    }
+    },
+    // 多图片上传
+    setFileValue(fileList, type, fileId) {
+      let ids = fileList.map((item, index) => {
+        this.fileIds.push(item.id)
+        return item.id
+      })
+      this.model[type][fileId] = ids.join()
+    },
   },
 }
 export default indexMixin

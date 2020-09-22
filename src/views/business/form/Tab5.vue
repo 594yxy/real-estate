@@ -1,21 +1,8 @@
 <template>
   <a-form :form="form">
-    <a-tabs type="card" default-active-key="1" class="my-card-tabs">
-      <a-tab-pane key="1" tab="原件">
-        <a-tabs type="card" default-active-key="1" tab-position="left">
-          <a-tab-pane v-for="item in panes" :key="item.key" :tab="`${item.title}`">
-            <UploadList />
-          </a-tab-pane>
-        </a-tabs>
-      </a-tab-pane>
-      <a-tab-pane key="2" tab="复印件" force-render>
-        <a-tabs type="card" default-active-key="1" tab-position="left">
-          <a-tab-pane
-            v-for="item in panes"
-            :key="item.key"
-            :tab="`${item.title}`"
-          >{{ item.content }}</a-tab-pane>
-        </a-tabs>
+    <a-tabs type="card" default-active-key="1" tab-position="left" class="my-card-tabs">
+      <a-tab-pane v-for="item in panes" :key="item.key" :tab="`${item.title}`">
+        <UploadList />
       </a-tab-pane>
     </a-tabs>
 

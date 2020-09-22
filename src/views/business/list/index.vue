@@ -91,6 +91,9 @@
           <a-button>申请终止</a-button>
         </a-button-group>
       </div>
+      <a-menu :style="menuStyle" v-if="menuVisible" class="contextmenu">
+        <a-menu-item key="detail" @click="handleDetail(rowData)">查看详情</a-menu-item>
+      </a-menu>
       <a-table
         :columns="columns"
         :dataSource="dataSource"
@@ -99,6 +102,7 @@
         :pagination="pagination"
         size="middle"
         :row-selection="rowSelection"
+        :custom-row="rowClick"
       >
         <template v-for="col in ['balance', 'allAmount']" :slot="col" slot-scope="text">
           <div :key="col">

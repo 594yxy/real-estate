@@ -5,6 +5,26 @@ import moment from 'moment'
 
 var modalMixin = {
   data() {
+    const rules = {
+      must: {
+        required: true,
+        message: '此字段为必填！',
+        trigger: 'blur'
+      },
+      select: {
+        required: true,
+        message: '请选择对应选项！',
+        trigger: 'change'
+      },
+      phone: [{
+        required: true,
+        message: '此字段为必填！',
+        trigger: 'blur'
+      }, {
+        validator: this.validator.validatePhone,
+        trigger: 'change'
+      }],
+    }
     return {
       labelCol: {
         xs: {
@@ -30,7 +50,6 @@ var modalMixin = {
         dictTypeUrl: '/api/dict/typeList',
         editKeyValueUrl: '/api/setting/update/'
       },
-      form: this.$form.createForm(this),
       visible: false,
       confirmLoading: false,
       isDisabled: false,
@@ -45,45 +64,20 @@ var modalMixin = {
         add: '新增成功',
         edit: '修改成功'
       },
-      validatorRules: {
-        must: {
-          rules: [{
-            required: true,
-            message: '此字段为必填项！'
-          }]
-        },
-        phone: {
-          rules: [{
-            required: true,
-            message: '请输入您的联系电话'
-          }, {
-            validator: this.validator.validatePhone
-          }]
-        },
-      },
-      fileList: [],
-      uploading: false,
+      rules,
+      fileIds: [],
       roleMark: localStorage.getItem('mark') || "",
       userId: localStorage.getItem('userId') || "",
       // gender
-      genderList: []
+      genderList: [],
+      ruleForm: {}
     }
   },
-  filters: {
-    amountFilter: (val) => {
-      if (!val) {
-        return 0
-      }
-      return parseFloat((val / 100).toFixed(2))
-    }
-  },
+  filters: {},
   mounted() {},
   methods: {
-
     // 表单打开之前
-    beforeOpen() {
-      this.fileList = []
-    },
+    beforeOpen() {},
 
     // 新增表单
     add() {
@@ -93,16 +87,14 @@ var modalMixin = {
     // 修改表单
     edit(record) {
       this.beforeOpen(record)
-      this.form.resetFields()
-      this.model = Object.assign({}, record)
       this.visible = true
+      this.model = Object.assign({}, record)
       this.setForm(this.model)
     },
 
     // 查看详情
     detail(record) {
       this.beforeOpen(record)
-      this.form.resetFields()
       this.visible = true
       this.fillForm(record.id)
     },
@@ -130,41 +122,42 @@ var modalMixin = {
         this.confirmLoading = false
       })
     },
-
-    // 提交表单
-    handleSubmit(e) {
+    // 提交
+    handleOk(e) {
       e.preventDefault();
-      this.confirmLoading = true
-      this.form.validateFields((errors, values) => {
-        if (!errors) {
-          let dataObj = this.beforeSubmit(values)
-          let formData = Object.assign(this.model, dataObj);
-          console.log('form value', formData)
-          axios({
-            url: this.model.id ? (this.Urls.editUrl + this.model.id) : this.Urls.addUrl,
-            method: 'post',
-            data: formData
-          }).then(res => {
-            this.confirmLoading = false
-            if (res.code == 0) {
-              this.$notification.success({
-                message: this.model.id ? this.tips.edit : this.tips.add
-              })
-              this.close()
-              this.afterSubmit()
-              this.$emit('ok')
-            } else {
-              this.$notification.error({
-                message: res.msg
-              })
-            }
-          }).catch(() => {
-            this.localLoading = false
-          })
-        } else {
+      this.$refs.ruleForm.validate(valid => {
+        this.confirmLoading = true
+        console.log('验证', valid)
+        // if (valid) {
+        let dataObj = this.beforeSubmit(this.model)
+        console.log('submit!', dataObj)
+        /* axios({
+          url: this.model.id ? (this.Urls.editUrl + this.model.id) : this.Urls.addUrl,
+          method: 'post',
+          data: dataObj
+        }).then(res => {
           this.confirmLoading = false
-        }
-      })
+          if (res.code == 0) {
+            this.$notification.success({
+              message: this.model.id ? this.tips.edit : this.tips.add
+            })
+            this.close()
+            this.afterSubmit(res.data)
+            this.$emit('ok', res.data)
+          } else {
+            this.$notification.error({
+              message: res.msg
+            })
+          }
+        }).catch(() => {
+          this.confirmLoading = false
+        }) */
+        /* } else {
+          console.log('error submit!!');
+          this.confirmLoading = false
+          return false;
+        } */
+      });
     },
     beforeSubmit(form) {
       return form
@@ -173,8 +166,10 @@ var modalMixin = {
     afterSubmit() {},
     close() {
       this.$emit('close')
+      this.$nextTick(() => {
+        this.$refs.ruleForm.resetFields();
+      })
       this.visible = false;
-      this.form.resetFields();
     },
     handleCancel() {
       this.close()

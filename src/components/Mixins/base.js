@@ -52,7 +52,16 @@ var baseMixin = {
       // 地区
       proviceList: [],
       cityList: [],
-      districtList: []
+      districtList: [],
+      menuVisible: false,
+      rowData: {},
+      menuStyle: {
+        position: "fixed",
+        top: "0",
+        left: "0",
+        border: "1px solid #eee",
+        zIndex: 1
+      }
     }
   },
   computed: {
@@ -516,11 +525,21 @@ var baseMixin = {
     rowClick(record, index) {
       return {
         on: {
-          click: () => {
-            this.handleDetail(record)
+          contextmenu: (e) => {
+            e.preventDefault();
+            this.rowData = record
+            this.menuVisible = true;
+            this.menuStyle.top = e.clientY + "px";
+            this.menuStyle.left = e.clientX + "px";
+            document.addEventListener("click", this.cancelClick);
+            // this.handleDetail(record)
           }
         }
       }
+    },
+    cancelClick() {
+      this.menuVisible = false
+      document.addEventListener("click", this.cancelClick);
     },
     // 刷新
     refresh() {

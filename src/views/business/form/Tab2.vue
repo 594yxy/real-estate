@@ -1,13 +1,7 @@
 <template>
   <a-form-model ref="ruleForm" :model="model" class="my-form">
     <a-spin :spinning="confirmLoading">
-      <a-tabs
-        v-model="activeKey"
-        type="editable-card"
-        size="small"
-        @change="tabChange"
-        @edit="onTabEdit"
-      >
+      <a-tabs v-model="activeKey" type="editable-card" size="small" @edit="onTabEdit">
         <template slot="tabBarExtraContent">
           <div class="tab-extra">
             <a-button type="danger" class="ml-8" @click.native="addThirdPay">第三方垫付</a-button>
@@ -38,7 +32,7 @@
                       :prop="'salerList['+index+'].salerName'"
                       :rules="rules.must"
                     >
-                      <a-input read-only placeholder="请输入姓名" v-model="pane.salerName">
+                      <a-input placeholder="请输入姓名" v-model="pane.salerName">
                         <a-tooltip slot="addonAfter" title="点击读取信息">
                           <a-icon
                             type="idcard"
@@ -55,7 +49,7 @@
                       :wrapperCol="wrapperCol"
                       label="性别"
                       :prop="'salerList['+index+'].salerGender'"
-                      :rules="rules.must"
+                      :rules="rules.select"
                     >
                       <a-select placeholder="请选择" v-model="pane.salerGender">
                         <a-select-option v-for="item in genderList" :key="item.key">{{ item.value }}</a-select-option>
@@ -70,7 +64,7 @@
                       :prop="'salerList['+index+'].salerIdcard'"
                       :rules="rules.must"
                     >
-                      <a-input read-only placeholder="请输入身份证号码" v-model="pane.salerIdcard" />
+                      <a-input placeholder="请输入身份证号码" v-model="pane.salerIdcard" />
                     </a-form-model-item>
                   </a-col>
                   <a-col :xs="24" :sm="24" :md="12" :xl="8">
@@ -106,7 +100,7 @@
                       :prop="'salerList['+index+'].salerAddr'"
                       :rules="rules.must"
                     >
-                      <a-input read-only placeholder="请输入你的详细地址" v-model="pane.salerAddr" />
+                      <a-input placeholder="请输入你的详细地址" v-model="pane.salerAddr" />
                     </a-form-model-item>
                   </a-col>
                 </a-row>
@@ -164,7 +158,7 @@
                       :prop="'salerList['+index+'].assignor.personName'"
                       :rules="rules.must"
                     >
-                      <a-input placeholder="请输入姓名" read-only v-model="pane.assignor.personName">
+                      <a-input placeholder="请输入姓名" v-model="pane.assignor.personName">
                         <a-tooltip slot="addonAfter" title="点击读取信息">
                           <a-icon
                             type="idcard"
@@ -181,7 +175,7 @@
                       :wrapperCol="wrapperCol"
                       label="性别"
                       :prop="'salerList['+index+'].assignor.personGender'"
-                      :rules="rules.must"
+                      :rules="rules.select"
                     >
                       <a-select placeholder="请选择" v-model="pane.assignor.personGender">
                         <a-select-option v-for="item in genderList" :key="item.key">{{ item.value }}</a-select-option>
@@ -196,11 +190,7 @@
                       :prop="'salerList['+index+'].assignor.personIdcard'"
                       :rules="rules.must"
                     >
-                      <a-input
-                        placeholder="请输入身份证号码"
-                        read-only
-                        v-model="pane.assignor.personIdcard"
-                      />
+                      <a-input placeholder="请输入身份证号码" v-model="pane.assignor.personIdcard" />
                     </a-form-model-item>
                   </a-col>
                   <a-col :xs="24" :sm="24" :md="12" :xl="8">
@@ -225,7 +215,11 @@
                       :prop="'salerList['+index+'].assignor.personPhone'"
                       :rules="rules.phone"
                     >
-                      <a-input placeholder="请输入11位手机号码" v-model="pane.assignor.personPhone" />
+                      <a-input
+                        :max-length="11"
+                        placeholder="请输入11位手机号码"
+                        v-model="pane.assignor.personPhone"
+                      />
                     </a-form-model-item>
                   </a-col>
                 </a-row>
@@ -239,11 +233,7 @@
                       :prop="'salerList['+index+'].assignor.personIdcardAddr'"
                       :rules="rules.must"
                     >
-                      <a-input
-                        read-only
-                        placeholder="请输入你的详细地址"
-                        v-model="pane.assignor.personIdcardAddr"
-                      />
+                      <a-input placeholder="请输入你的详细地址" v-model="pane.assignor.personIdcardAddr" />
                     </a-form-model-item>
                   </a-col>
                 </a-row>
@@ -323,7 +313,7 @@
                       :prop="'salerList['+index+'].guardianList['+keyIndex+'].personName'"
                       :rules="rules.must"
                     >
-                      <a-input placeholder="请输入姓名" read-only v-model="guardian.personName">
+                      <a-input placeholder="请输入姓名" v-model="guardian.personName">
                         <a-tooltip slot="addonAfter" title="点击读取信息">
                           <a-icon
                             type="idcard"
@@ -340,7 +330,7 @@
                       :wrapperCol="wrapperCol"
                       label="性别"
                       :prop="'salerList['+index+'].guardianList['+keyIndex+'].personGender'"
-                      :rules="rules.must"
+                      :rules="rules.select"
                     >
                       <a-select placeholder="请选择" v-model="guardian.personGender">
                         <a-select-option v-for="item in genderList" :key="item.key">{{ item.value }}</a-select-option>
@@ -355,7 +345,7 @@
                       :prop="'salerList['+index+'].guardianList['+keyIndex+'].personIdcard'"
                       :rules="rules.must"
                     >
-                      <a-input placeholder="请输入身份证号码" read-only v-model="guardian.personIdcard" />
+                      <a-input placeholder="请输入身份证号码" v-model="guardian.personIdcard" />
                     </a-form-model-item>
                   </a-col>
                   <a-col :xs="24" :sm="24" :md="12" :xl="8">
@@ -377,7 +367,11 @@
                       :prop="'salerList['+index+'].guardianList['+keyIndex+'].personPhone'"
                       :rules="rules.phone"
                     >
-                      <a-input placeholder="请输入11位手机号码" v-model="guardian.personPhone" />
+                      <a-input
+                        :max-length="11"
+                        placeholder="请输入11位手机号码"
+                        v-model="guardian.personPhone"
+                      />
                     </a-form-model-item>
                   </a-col>
                 </a-row>
@@ -391,11 +385,7 @@
                       :prop="'salerList['+index+'].guardianList['+keyIndex+'].personIdcardAddr'"
                       :rules="rules.must"
                     >
-                      <a-input
-                        read-only
-                        placeholder="请输入你的详细地址"
-                        v-model="guardian.personIdcardAddr"
-                      />
+                      <a-input placeholder="请输入你的详细地址" v-model="guardian.personIdcardAddr" />
                     </a-form-model-item>
                   </a-col>
                 </a-row>
@@ -479,7 +469,7 @@
                       :wrapperCol="wrapperCol"
                       label="业务类型"
                       :prop="'salerList['+index+'].bankAccountList['+bankIndex+'].accountBusinessType'"
-                      :rules="rules.must"
+                      :rules="rules.select"
                     >
                       <a-select placeholder="请选择" v-model="bank.accountBusinessType">
                         <a-select-option
@@ -508,9 +498,15 @@
                       :prop="'salerList['+index+'].bankAccountList['+bankIndex+'].bankCardNo'"
                       :rules="rules.must"
                     >
-                      <a-input placeholder="请输入卡号" v-model="bank.bankCardNo">
-                        <a-tooltip slot="addonAfter" title="点击获取信息">
-                          <a-icon type="camera" class="read-card-icon" />
+                      <a-input placeholder="请输入卡号" :max-length="20" v-model="bank.bankCardNo">
+                        <a-tooltip slot="addonAfter" title="点击上传识别">
+                          <a-upload
+                            name="file"
+                            :show-upload-list="false"
+                            :before-upload="getBankInfo"
+                          >
+                            <a-icon type="camera" class="read-card-icon" />
+                          </a-upload>
                         </a-tooltip>
                       </a-input>
                     </a-form-model-item>
@@ -567,16 +563,16 @@
       </a-tabs>
 
       <a-form-model-item class="form-btn" style="margin-top: 24px">
-        <a-button>返 回</a-button>
-        <a-button type="primary" @click="handleSubmit" style="margin-left: 24px">保 存</a-button>
+        <a-button @click="handleReturn">返 回</a-button>
+        <a-button type="primary" @click="handleOk" style="margin-left: 24px">保 存</a-button>
       </a-form-model-item>
-      <ThirdPay ref="modalForm" />
     </a-spin>
+    <ThirdPay ref="thirdForm" @ok="setThirdValue" />
   </a-form-model>
 </template>
 
 <script>
-import modalMixin from '@/components/Mixins/modal'
+import modalMixin from '@/components/Mixins/form'
 import indexMixin from './modules/Tab2'
 import UploadImg from '@/components/Upload/index'
 import ThirdPay from './modules/ThirdPay'

@@ -2,12 +2,11 @@ import {
   axios
 } from '@/utils/request';
 const columns = [{
+  title: '编号',
+  dataIndex: 'id'
+}, {
   title: '流程节点',
   dataIndex: 'procStatusDesc'
-}, {
-  title: '编号',
-  align: 'center',
-  dataIndex: 'id'
 }, {
   title: '业务类型',
   align: 'center',

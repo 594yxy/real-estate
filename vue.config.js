@@ -95,20 +95,20 @@ const vueConfig = {
     port: 8000,
     // If you want to turn on the proxy, please remove the mockjs /src/main.jsL11
     proxy: {
-      '/api': {
-        target: 'http://192.168.1.101:8089',
-        ws: true,
-        changeOrigin: true,
-        pathRewrite: {
-          '^/api': ''
-        }
-      },
       '/req': {
         target: 'http://127.0.0.1:24010',
         ws: true,
         changeOrigin: true,
         pathRewrite: {
-          '^/req': ''
+          '^/req': '/'
+        }
+      },
+      '/api': {
+        target: 'http://221.13.13.133:7000',
+        ws: true,
+        changeOrigin: true,
+        pathRewrite: {
+          '^/api': '/'
         }
       }
     },

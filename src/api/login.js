@@ -1,15 +1,15 @@
 import request from '@/utils/request'
 
 const userApi = {
-  Login: '/api/auth/login',
-  Logout: '/api/auth/logout',
+  Login: '/auth/api/auth/login',
+  Logout: '/auth/api/auth/logout',
   ForgePassword: '/auth/forge-password',
   Register: '/auth/register',
   twoStepCode: '/auth/2step-code',
   SendSms: '/account/sms',
   SendSmsErr: '/account/sms_err',
   // get my info
-  UserInfo: '/user/info',
+  UserInfo: '/auth/api/resource/getResource',
   UserMenu: '/user/nav'
 }
 
@@ -40,13 +40,14 @@ export function getSmsCaptcha(parameter) {
   })
 }
 
-export function getInfo() {
+export function getInfo(parameter) {
   return request({
     url: userApi.UserInfo,
     method: 'get',
     headers: {
       'Content-Type': 'application/json;charset=UTF-8'
-    }
+    },
+    params: parameter
   })
 }
 

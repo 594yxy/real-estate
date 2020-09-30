@@ -19,7 +19,7 @@ export const asyncRouterMap = [
     meta: {
       title: '首页'
     },
-    redirect: '/system/user',
+    redirect: '/business/list',
     children: [
 
       // business
@@ -45,6 +45,7 @@ export const asyncRouterMap = [
         }, {
           path: '/business/list/add',
           name: 'BusinessListAdd',
+          hidden: true,
           component: () => import('@/views/business/form/index'),
           meta: {
             title: '新建业务',
@@ -66,15 +67,65 @@ export const asyncRouterMap = [
           permission: ['permission']
         },
         children: [{
-          path: '/system/user',
-          name: 'user',
-          component: () => import('@/views/system/user/index'),
-          meta: {
-            title: '用户管理',
-            keepAlive: true,
-            permission: ['table']
-          }
-        }]
+            path: '/system/user',
+            name: 'user',
+            component: () => import('@/views/system/user/index'),
+            meta: {
+              title: '用户管理',
+              keepAlive: true,
+              permission: ['table']
+            }
+          },
+          {
+            path: '/system/role',
+            name: 'role',
+            component: () => import('@/views/system/role/index'),
+            meta: {
+              title: '角色管理',
+              keepAlive: true,
+              permission: ['table']
+            }
+          },
+          {
+            path: '/system/org',
+            name: 'org',
+            component: () => import('@/views/system/org/index'),
+            meta: {
+              title: '部门管理',
+              keepAlive: true,
+              permission: ['table']
+            }
+          },
+          {
+            path: '/system/dict',
+            name: 'dict',
+            component: () => import('@/views/system/dict/index'),
+            meta: {
+              title: '字典管理',
+              keepAlive: true,
+              permission: ['table']
+            }
+          },
+          {
+            path: '/system/permission',
+            name: 'permission',
+            component: () => import('@/views/system/menu/index'),
+            meta: {
+              title: '权限管理',
+              keepAlive: true,
+              permission: ['table']
+            }
+          }, {
+            path: '/system/bank',
+            name: 'bank',
+            component: () => import('@/views/system/bank/index'),
+            meta: {
+              title: '监管银行管理',
+              keepAlive: true,
+              permission: ['table']
+            }
+          },
+        ]
       },
 
       // account

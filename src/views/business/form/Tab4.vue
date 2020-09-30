@@ -1,5 +1,5 @@
 <template>
-  <a-form :form="form">
+  <a-form :form="form" class="my-form">
     <a-tabs type="card" default-active-key="1" tab-position="left" class="my-card-tabs">
       <a-tab-pane v-for="item in panes" :key="item.key" :tab="`${item.title}`">{{ item.content }}</a-tab-pane>
     </a-tabs>

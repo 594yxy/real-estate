@@ -24,8 +24,8 @@ var indexMixin = {
     }]
     return {
       Urls: {
-        addUrl: '/api/business/temp',
-        editUrl: '/api/business/update/'
+        addUrl: '/biz/api/business/temp',
+        editUrl: '/biz/api/business/update/'
       },
       labelCol: {
         xxl: {
@@ -116,13 +116,9 @@ var indexMixin = {
         key: "SALER_BALANCE",
         value: "尾款银行"
       }],
-      fileIds: [],
       tips: {
         add: '卖方信息保存成功',
-        edit: '卖方信息编辑成功'
-      },
-      model: {
-        salerList,
+        edit: '卖方信息保存成功'
       },
       activeKey: salerList[0].tabKey,
       newTabIndex: 1
@@ -130,69 +126,29 @@ var indexMixin = {
   },
   filters: {},
   created() {
-    this.model = this.info
     this.getDictData('gender', 'genderList')
+    this.model = this.info
     if (this.model.id) {
       this.setForm()
     }
   },
   methods: {
     // 赋值
-    setForm(data) {
+    setForm() {
       console.log('卖方信息', this.model.salerList)
       if (this.model.salerList && this.model.salerList.length > 0) {
         this.model.salerList.map((item, index) => {
           item.title = index == 0 ? "卖房信息" : "共有人"
           item.closable = index == 0 ? false : true
           item.tabKey = index
-          if (item.salerIdcardValidity && typeof (item.salerIdcardValidity) == 'string') {
-            item.salerIdcardValidity = item.salerIdcardValidity.split(",")
-          }
-          if (item.assignor && item.assignor.personIdcardValidity && typeof (item.assignor.personIdcardValidity) == 'string') {
-            item.assignor.personIdcardValidity = item.assignor.personIdcardValidity.split(",")
-          }
-          if (item.guardianList.length > 0) {
-            item.guardianList.map((key, k) => {
-              if (key.personIdcardValidity && typeof (key.personIdcardValidity) == 'string')
-                key.personIdcardValidity = key.personIdcardValidity.split(",")
-            })
-          }
         })
       }
     },
     afterSubmit(data) {
-      this.model.id = data.id
-      this.model = data
-      this.setForm()
-    },
-    // 有效期格式处理
-    beforeSubmit(form) {
-      if (form.salerList && form.salerList.length > 0) {
-        form.salerList.map((item, index) => {
-          if (item.salerIdcardValidity) {
-            item.salerIdcardValidity = item.salerIdcardValidity.join()
-          }
-          if (item.assignor && item.assignor.personIdcardValidity) {
-            item.assignor.personIdcardValidity = item.assignor.personIdcardValidity.join()
-          }
-          if (item.guardianList.length > 0) {
-            item.guardianList.map((key, k) => {
-              key.personIdcardValidity = key.personIdcardValidity.join()
-            })
-          }
-        })
-      }
-      if (form.buyerList && form.buyerList.length > 0) {
-        form.buyerList.map((item, index) => {
-          if (item.buyerIdcardValidity) {
-            item.buyerIdcardValidity = item.buyerIdcardValidity.join()
-          }
-          if (item.spouseIdcardValidity) {
-            item.spouseIdcardValidity.join()
-          }
-        })
-      }
-      return form
+      this.$nextTick(() => {
+        this.model = data
+        this.setForm()
+      })
     },
     onTabEdit(targetKey, action) {
       this[action](targetKey)
@@ -215,7 +171,6 @@ var indexMixin = {
     },
     // remove Tab
     remove(targetKey) {
-      console.log(targetKey)
       let activeKey = this.activeKey;
       let lastIndex;
       const panes = this.model.salerList;
@@ -285,12 +240,27 @@ var indexMixin = {
       }
       this.model.salerList[index].bankAccountList.splice(keyIndex, 1)
     },
+
+    // 日期格式
+    dateChange(date, dateString, index, type, obj, keyIndex) {
+      if (obj && typeof (keyIndex) == 'undefined') {
+        // object
+        this.model.salerList[index][`${obj}`][`${type}IdcardStart`] = dateString
+      } else if (obj && typeof (keyIndex) == 'number') {
+        // array
+        this.model.salerList[index][`${obj}`][`${keyIndex}`][`${type}IdcardStart`] = dateString
+      } else {
+        // all
+        this.model.salerList[index][`${type}IdcardStart`] = dateString
+      }
+    },
+
     // 获取银行信息
-    async getBankInfo(file) {
-      console.log('银行图片', file)
-      let base64 = await this.getBase64(file)
-      let data = await IdCard.setBankData(base64)
+    async getBankInfo(file, index, bankIndex) {
+      let data = await IdCard.setBankData(file)
       console.log('bank Info', data)
+      this.$set(this.model.salerList[index].bankAccountList[bankIndex], 'bankCardNo', data.cardNo)
+      this.$set(this.model.salerList[index].bankAccountList[bankIndex], 'bankName', data.bankName)
       return false
     },
 
@@ -300,50 +270,41 @@ var indexMixin = {
       console.log('idcard info', data)
       if (obj && typeof (keyIndex) == 'undefined') {
         // object
-        this.model.salerList[index][`${obj}`][`${type}Name`] = data.Name
-        this.model.salerList[index][`${obj}`][`${type}Gender`] = data.Sex
-        this.model.salerList[index][`${obj}`][`${type}Idcard`] = data.IDNumber
-        this.model.salerList[index][`${obj}`][`${type}IdcardValidity`] = [
-          moment(data.IssuedData).format('YYYY-MM-DD'),
-          moment(data.ValidDate).format('YYYY-MM-DD'),
-        ]
-        this.model.salerList[index][`${obj}`][`${type}Addr`] = data.Address
+        this.$set(this.model.salerList[index][`${obj}`], `${type}Name`, data.Name)
+        this.$set(this.model.salerList[index][`${obj}`], `${type}Gender`, data.Sex)
+        this.$set(this.model.salerList[index][`${obj}`], `${type}Idcard`, data.IDNumber)
+        this.$set(this.model.salerList[index][`${obj}`], `${type}IdcardStart`, moment(data.IssuedData).format('YYYY-MM-DD'))
+        this.$set(this.model.salerList[index][`${obj}`], `${type}IdcardEnd`, data.ValidDate == "长期" ? "长期" : moment(data.ValidDate).format('YYYY-MM-DD'))
+        this.$set(this.model.salerList[index][`${obj}`], `${type}Addr`, data.Address)
       } else if (obj && typeof (keyIndex) == 'number') {
         // array
-        this.model.salerList[index][`${obj}`][`${keyIndex}`][`${type}Name`] = data.Name
-        this.model.salerList[index][`${obj}`][`${keyIndex}`][`${type}Gender`] = data.Sex
-        this.model.salerList[index][`${obj}`][`${keyIndex}`][`${type}Idcard`] = data.IDNumber
-        this.model.salerList[index][`${obj}`][`${keyIndex}`][`${type}IdcardValidity`] = [
-          moment(data.IssuedData).format('YYYY-MM-DD'),
-          moment(data.ValidDate).format('YYYY-MM-DD'),
-        ]
-        this.model.salerList[index][`${obj}`][`${keyIndex}`][`${type}Addr`] = data.Address
+        this.$set(this.model.salerList[index][`${obj}`][`${keyIndex}`], `${type}Name`, data.Name)
+        this.$set(this.model.salerList[index][`${obj}`][`${keyIndex}`], `${type}Gender`, data.Sex)
+        this.$set(this.model.salerList[index][`${obj}`][`${keyIndex}`], `${type}Idcard`, data.IDNumber)
+        this.$set(this.model.salerList[index][`${obj}`][`${keyIndex}`], `${type}IdcardStart`, moment(data.IssuedData).format('YYYY-MM-DD'))
+        this.$set(this.model.salerList[index][`${obj}`][`${keyIndex}`], `${type}IdcardEnd`, data.ValidDate == "长期" ? "长期" : moment(data.ValidDate).format('YYYY-MM-DD'))
+        this.$set(this.model.salerList[index][`${obj}`][`${keyIndex}`], `${type}Addr`, data.Address)
       } else {
         // all
-        this.model.salerList[index][`${type}Name`] = data.Name
-        this.model.salerList[index][`${type}Gender`] = data.Sex
-        this.model.salerList[index][`${type}Idcard`] = data.IDNumber
-        this.model.salerList[index][`${type}IdcardValidity`] = [
-          moment(data.IssuedData).format('YYYY-MM-DD'),
-          moment(data.ValidDate).format('YYYY-MM-DD'),
-        ]
-        this.model.salerList[index][`${type}Addr`] = data.Address
+        this.$set(this.model.salerList[index], `${type}Name`, data.Name)
+        this.$set(this.model.salerList[index], `${type}Gender`, data.Sex)
+        this.$set(this.model.salerList[index], `${type}Idcard`, data.IDNumber)
+        this.$set(this.model.salerList[index], `${type}IdcardStart`, moment(data.IssuedData).format('YYYY-MM-DD'))
+        this.$set(this.model.salerList[index], `${type}IdcardEnd`, data.ValidDate == "长期" ? "长期" : moment(data.ValidDate).format('YYYY-MM-DD'))
+        this.$set(this.model.salerList[index], `${type}Addr`, data.Address)
       }
-      this.$forceUpdate();
     },
 
     // 图片验证并设置值
     setImageData(file, index, field, type, keyIndex) {
-      let model = {}
-      if (type) {
-        this.model.salerList[`${index}`][`${type}`][`${field}`] = file
-      } else if (keyIndex) {
-        this.model.salerList[`${index}`][`${type}`][`${keyIndex}`][`${field}`] = file
+      if (type && typeof (keyIndex) == 'undefined') {
+        this.$set(this.model.salerList[index][type], `${field}`, file)
+      } else if (type && typeof (keyIndex) == 'number') {
+        this.$set(this.model.salerList[index][type][keyIndex], `${field}`, file)
       } else {
-        this.model.salerList[`${index}`][`${field}`] = file
+        this.$set(this.model.salerList[index], `${field}`, file)
       }
-      this.$forceUpdate();
-      this.fileIds.push(field)
+      this.fileIds.push(file)
     }
   },
 }

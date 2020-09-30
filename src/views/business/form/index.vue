@@ -2,36 +2,26 @@
   <page-header-wrapper :title="false">
     <a-card :bordered="false">
       <a-spin :spinning="confirmLoading">
-        <a-tabs v-model="activeKey" class="my-tabs" @change="tabChange" v-if="showTab">
+        <a-tabs v-model="activeKey" class="my-tabs" @change="tabChange" :animated="false" v-if="showTab">
           <a-tab-pane :key="1">
-            <span slot="tab">
-              <a-icon type="user" />买方信息
-            </span>
-            <Tab1 v-if="activeKey == 1" :info="business" />
+            <span slot="tab"> <a-icon type="user" />买方信息 </span>
+            <Tab1 v-if="activeKey == 1" :info="business" @ok="setModel" />
           </a-tab-pane>
           <a-tab-pane :key="2">
-            <span slot="tab">
-              <a-icon type="home" />卖方信息
-            </span>
-            <Tab2 v-if="activeKey == 2" @prevStep="prevStep" :info="business" />
+            <span slot="tab"> <a-icon type="home" />卖方信息 </span>
+            <Tab2 v-if="activeKey == 2" @prevStep="prevStep" :info="business" @ok="setModel" />
           </a-tab-pane>
           <a-tab-pane :key="3">
-            <span slot="tab">
-              <a-icon type="red-envelope" />贷款信息
-            </span>
-            <Tab3 v-if="activeKey == 3" @prevStep="prevStep" :info="business" />
+            <span slot="tab"> <a-icon type="red-envelope" />贷款信息 </span>
+            <Tab3 v-if="activeKey == 3" @prevStep="prevStep" :info="business" @ok="setModel" />
           </a-tab-pane>
           <a-tab-pane :key="4">
-            <span slot="tab">
-              <a-icon type="printer" />打印贷款资料
-            </span>
-            <Tab4 v-if="activeKey == 4" />
+            <span slot="tab"> <a-icon type="printer" />打印贷款资料 </span>
+            <Tab4 v-if="activeKey == 4" @prevStep="prevStep" :info="business" />
           </a-tab-pane>
           <a-tab-pane :key="5">
-            <span slot="tab">
-              <a-icon type="schedule" />完善贷款资料
-            </span>
-            <Tab5 v-if="activeKey == 5" />
+            <span slot="tab"> <a-icon type="schedule" />完善贷款资料 </span>
+            <Tab5 v-if="activeKey == 5" @prevStep="prevStep" :info="business" />
           </a-tab-pane>
         </a-tabs>
       </a-spin>
@@ -83,12 +73,11 @@ export default {
       ],
       loan: {},
       property: {},
+      downPayment: [],
     }
     return {
       Urls: {
-        addUrl: '/api/business/temp',
-        editUrl: '/api/business/update/',
-        getByIdUrl: '/api/business/all/get/',
+        getByIdUrl: '/biz/api/business/all/get/',
       },
       activeKey: 1,
       form: null,
@@ -99,7 +88,7 @@ export default {
   },
   created() {},
   mounted() {
-    let businessId = this.$route.query.id
+    let businessId = this.$route.query.id || this.model.id
     if (businessId) {
       this.fillForm(businessId)
     }
@@ -117,6 +106,39 @@ export default {
           if (res.code == 0) {
             this.business = res.data
             console.log('业务对象', this.business)
+            if (!res.data.buyerList || res.data.buyerList.length == 0) {
+              this.business.buyerList = [
+                {
+                  title: '买方信息',
+                  tabKey: 0,
+                  closable: false,
+                  bankAccountList: [{}],
+                },
+              ]
+            }
+            if (!res.data.salerList || res.data.salerList.length == 0) {
+              this.business.salerList = [
+                {
+                  title: '卖方信息',
+                  tabKey: 0,
+                  closable: false,
+                  assignor: null,
+                  guardianList: [],
+                  bankAccountList: [
+                    {
+                      accountBusinessType: 'SALER',
+                    },
+                  ],
+                },
+              ]
+            }
+
+            if (!res.data.loan) {
+              this.business.loan = {}
+            }
+            if (!res.data.property) {
+              this.business.property = {}
+            }
             this.showTab = false
             this.$nextTick(() => {
               this.showTab = true
@@ -136,6 +158,9 @@ export default {
       if (this.activeKey > 0) {
         this.activeKey -= 1
       }
+    },
+    setModel(data) {
+      this.business = data
     },
   },
 }

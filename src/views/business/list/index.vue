@@ -6,16 +6,12 @@
           <a-row :gutter="24">
             <a-col :xl="6" :md="12" :sm="24">
               <a-form-item label="业务编号">
-                <a-input allowClear v-model="queryParam.condition.keyWord" placeholder="请输入业务编号" />
+                <a-input allowClear v-model="queryParam.condition.id" placeholder="请输入业务编号" />
               </a-form-item>
             </a-col>
             <a-col :xl="6" :md="12" :sm="24">
               <a-form-item label="买方/卖方">
-                <a-input
-                  allowClear
-                  v-model="queryParam.condition.keyWord"
-                  placeholder="请输入买方或者卖方的姓名"
-                />
+                <a-input allowClear v-model="queryParam.condition.personName" placeholder="请输入买方或者卖方的姓名" />
               </a-form-item>
             </a-col>
             <a-col :xl="12" :md="24" :sm="24">
@@ -25,7 +21,7 @@
             </a-col>
             <a-col :xl="6" :md="12" :sm="24">
               <a-form-item label="房产证号">
-                <a-input allowClear v-model="queryParam.condition.keyWord" placeholder="请输入房产证号" />
+                <a-input allowClear v-model="queryParam.condition.propertyNo" placeholder="请输入房产证号" />
               </a-form-item>
             </a-col>
             <a-col :xl="6" :md="12" :sm="24">
@@ -36,45 +32,48 @@
             <a-col :xl="6" :md="12" :sm="24">
               <a-form-item label="流程节点">
                 <a-select allowClear v-model="queryParam.condition.auditStatus" placeholder="请选择">
-                  <a-select-option
-                    v-for="item in Object.keys(statusMap)"
-                    :value="item"
-                    :key="item"
-                  >{{statusMap[item].text}}</a-select-option>
+                  <a-select-option v-for="item in procNodes" :value="item.key" :key="item.key">
+                    {{ item.value }}
+                  </a-select-option>
                 </a-select>
               </a-form-item>
             </a-col>
             <a-col :xl="6" :md="12" :sm="24">
               <a-form-item label="承办部门">
                 <a-select allowClear v-model="queryParam.condition.auditStatus" placeholder="请选择">
-                  <a-select-option
-                    v-for="item in Object.keys(statusMap)"
-                    :value="item"
-                    :key="item"
-                  >{{statusMap[item].text}}</a-select-option>
+                  <a-select-option v-for="item in orgList" :value="item.id" :key="item.id">
+                    {{ item.name }}
+                  </a-select-option>
+                </a-select>
+              </a-form-item>
+            </a-col>
+            <a-col :xl="6" :md="12" :sm="24">
+              <a-form-item label="贷款品种">
+                <a-select allowClear v-model="queryParam.condition.subType" placeholder="请选择">
+                  <a-select-option v-for="item in loanTypeList" :value="item.key" :key="item.key">{{
+                    item.value
+                  }}</a-select-option>
                 </a-select>
               </a-form-item>
             </a-col>
             <a-col :xl="6" :md="12" :sm="24">
               <a-form-item label="业务类型">
-                <a-select allowClear v-model="queryParam.condition.auditStatus" placeholder="请选择">
-                  <a-select-option
-                    v-for="item in Object.keys(statusMap)"
-                    :value="item"
-                    :key="item"
-                  >{{statusMap[item].text}}</a-select-option>
+                <a-select allowClear v-model="queryParam.condition.businessType" placeholder="请选择">
+                  <a-select-option v-for="item in busTypeList" :value="item.key" :key="item.key">{{
+                    item.value
+                  }}</a-select-option>
                 </a-select>
               </a-form-item>
             </a-col>
             <a-col :xl="6" :md="12" :sm="24">
               <a-form-item label="评估公司">
-                <a-input allowClear v-model="queryParam.condition.keyWord" placeholder="请输入评估公司" />
+                <a-input allowClear v-model="queryParam.condition.appraisers" placeholder="请输入评估公司" />
               </a-form-item>
             </a-col>
-            <a-col :xl="12" :md="24" :sm="24">
+            <a-col :xl="6" :md="24" :sm="24">
               <span class="table-page-search-submitButtons" style="float:right; overflow: 'hidden">
-                <a-button type="primary" @click="$refs.table.refresh(true)">查询</a-button>
-                <a-button style="margin-left: 8px" @click="() => queryParam = {}">重置</a-button>
+                <a-button type="primary" @click="handleSearch">查询</a-button>
+                <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
               </span>
             </a-col>
           </a-row>
@@ -92,7 +91,7 @@
         </a-button-group>
       </div>
       <a-menu :style="menuStyle" v-if="menuVisible" class="contextmenu">
-        <a-menu-item key="detail" @click="handleDetail(rowData)">查看详情</a-menu-item>
+        <a-menu-item key="1" @click="handleDetail(rowData)">查看详情</a-menu-item>
       </a-menu>
       <a-table
         :columns="columns"
@@ -104,26 +103,13 @@
         :row-selection="rowSelection"
         :custom-row="rowClick"
       >
-        <template v-for="col in ['balance', 'allAmount']" :slot="col" slot-scope="text">
+        <template v-for="col in ['loanSum']" :slot="col" slot-scope="text">
           <div :key="col">
             <template>
               <a-statistic prefix="￥" :value="text || 0" :value-style="valueStyle"></a-statistic>
             </template>
           </div>
         </template>
-        <span
-          slot="auditStatus"
-          slot-scope="text,record"
-          :class="text | statusTypeFilter"
-        >{{record.auditStatusDesc}}</span>
-
-        <span slot="action" slot-scope="text, record">
-          <template>
-            <a @click="handleAccountType(record)">设置角色</a>
-            <a-divider type="vertical" />
-            <a @click="handleDel(record)">删除</a>
-          </template>
-        </span>
       </a-table>
     </a-card>
   </page-header-wrapper>

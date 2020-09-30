@@ -1,13 +1,41 @@
 export default {
-  validatePhone(rule, value, callback) {
+  phone(rule, value, callback) {
+    if (new RegExp(/^1[3|4|5|7|8|9][0-9]\d{8}$/).test(value)) {
+      callback();
+    } else {
+      callback("请输入正确格式的手机号码!");
+    }
+  },
+  bankCardNo(rule, value, callback) {
     if (!value) {
       callback()
     } else {
-      if (new RegExp(/^1[3|4|5|7|8|9][0-9]\d{8}$/).test(value)) {
+      if (new RegExp(/^([1-9]{1})(\d{15}|\d{18})$/).test(value)) {
         callback();
       } else {
-        callback("请输入正确格式的手机号码!");
+        callback("请输入正确的银行卡号!");
+      }
+    }
+  },
+  date(rule, value, callback) {
+    if (!value) {
+      callback()
+    } else if (value && value == "长期") {
+      callback()
+    } else {
+      let reg = /((^((1[8-9]\d{2})|([2-9]\d{3}))(-)(10|12|0?[13578])(-)(3[01]|[12][0-9]|0?[1-9])$)|(^((1[8-9]\d{2})|([2-9]\d{3}))(-)(11|0?[469])(-)(30|[12][0-9]|0?[1-9])$)|(^((1[8-9]\d{2})|([2-9]\d{3}))(-)(0?2)(-)(2[0-8]|1[0-9]|0?[1-9])$)|(^([2468][048]00)(-)(0?2)(-)(29)$)|(^([3579][26]00)(-)(0?2)(-)(29)$)|(^([1][89][0][48])(-)(0?2)(-)(29)$)|(^([2-9][0-9][0][48])(-)(0?2)(-)(29)$)|(^([1][89][2468][048])(-)(0?2)(-)(29)$)|(^([2-9][0-9][2468][048])(-)(0?2)(-)(29)$)|(^([1][89][13579][26])(-)(0?2)(-)(29)$)|(^([2-9][0-9][13579][26])(-)(0?2)(-)(29)$))/
+      if (new RegExp(reg).test(value)) {
+        callback();
+      } else {
+        callback("请输入正确的日期格式!");
       }
     }
   }
+}
+/**
+ * 电话号码
+ * @param {*} s
+ */
+export function isPhone(s) {
+  return /^([0-9]{3,4}-)?[0-9]{7,8}$/.test(s)
 }

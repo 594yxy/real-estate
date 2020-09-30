@@ -1,9 +1,13 @@
 <template>
   <div>
-    <a-upload :file-list="fileList" @preview="handlePreview" :before-upload="beforeUpload">
-      <a-button>
-        <a-icon type="upload" />点击上传
-      </a-button>
+    <a-upload
+      :file-list="fileList"
+      @preview="handlePreview"
+      :before-upload="beforeUpload"
+      :remove="handleRemove"
+      @change="handleChange"
+    >
+      <a-button> <a-icon type="upload" />点击上传 </a-button>
     </a-upload>
     <viewer :images="images" @inited="inited" class="viewer" ref="viewer">
       <img v-for="src in images" :src="src" :key="src" />
@@ -24,7 +28,7 @@ import { axios } from '@/utils/request'
 export default {
   name: 'UploadFile',
   props: {
-    fileIds: {
+    ids: {
       type: String,
       default: '',
     },
@@ -49,13 +53,36 @@ export default {
       this.$viewer = viewer
     },
     async handlePreview(file) {
-      console.log(file)
       if (!file.url && !file.preview) {
         file.preview = await getBase64(file)
       }
       this.images = file.url ? file.url.split() : file.preview.split()
-      console.log('image', this.images)
       this.$viewer.show()
+    },
+    handleRemove(file) {
+      axios({
+        url: this.Urls.delFileUrl + file.uid,
+        method: 'get',
+      }).then((res) => {
+        if (res.code == 0) {
+          this.$notification.success({
+            message: '删除成功',
+          })
+          const index = this.fileList.indexOf(file)
+          const newFileList = this.fileList.slice()
+          newFileList.splice(index, 1)
+          this.fileList = newFileList
+
+          let fileIds = this.fileList.map((item) => {
+            return item.uid
+          })
+          this.$emit('setFileValue', fileIds)
+        } else {
+          this.$notification.error({
+            message: res.msg,
+          })
+        }
+      })
     },
     // 格式限制
     beforeUpload(file) {
@@ -75,21 +102,18 @@ export default {
         this.$message.error('图片大小不能超过2M!')
         return false
       }
-      this.fileList = [...this.fileList, file]
-      console.log('lala', file)
       return false
     },
     // 上传图片
-    handleUpload() {
+    handleChange({ file }) {
       const formData = new FormData()
-      this.fileList.forEach((file) => {
+      formData.append('file', file)
+      /* this.fileList.forEach((file) => {
         formData.append('files[]', file)
-      })
-      this.uploading = true
-
+      }) */
       this.uploading = true
       axios({
-        url: this.Urls.uploadFileUrl,
+        url: '/file/api/file/upload',
         method: 'post',
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -107,7 +131,10 @@ export default {
               url: res.data.url,
               ext: res.data.ext,
             })
-            this.$emit('setFileValue', this.fileList)
+            let fileIds = this.fileList.map((item) => {
+              return item.uid
+            })
+            this.$emit('setFileValue', fileIds)
           } else {
             this.$notification.error({
               message: res.msg,
@@ -142,7 +169,11 @@ export default {
           const newFileList = this.fileList.slice()
           newFileList.splice(index, 1)
           this.fileList = newFileList
-          this.$emit('setFileValue', this.fileList)
+          
+          let fileIds = this.fileList.map((item) => {
+            return item.uid
+          })
+          this.$emit('setFileValue', fileIds)
         } else {
           this.$notification.error({
             message: res.msg,
@@ -158,10 +189,16 @@ export default {
           ids: ids,
         },
       }).then((res) => {
-        console.log('返回的文件列表', res)
         if (res.code == 0) {
-          this.fileList = res.data
-          this.$emit('setFileValue', this.fileList)
+          this.fileList = res.data.map((item) => {
+            return {
+              uid: item.id,
+              name: item.name,
+              status: item.status,
+              url: item.url,
+              ext: item.ext,
+            }
+          })
         } else {
           this.$notification.error({
             message: res.msg,
@@ -171,8 +208,8 @@ export default {
     },
   },
   created() {
-    if (this.fileIds) {
-      this.getFile(this.fileIds)
+    if (this.ids) {
+      this.getFile(this.ids)
     }
   },
   mounted() {},

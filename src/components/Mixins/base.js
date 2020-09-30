@@ -29,13 +29,15 @@ var baseMixin = {
       columns: [],
       dataSource: [],
       localLoading: false,
+      expandedRowKeys: [],
+      tableShow: true,
       selectedRowKeys: [],
       selectedRows: [],
       Urls: {
         listUrl: '',
         delUrl: '',
-        dictTypeUrl: '/ida/api/dict/typeList',
-        dictChildrenUrl: '/ida/api/dict/typeList',
+        dictTypeUrl: '/biz/api/dict/typeList',
+        dictChildrenUrl: '/biz/api/dict/typeList',
         batchDelUrl: '',
         downloadExcelUrl: '',
         exportTempUrl: '',
@@ -45,6 +47,7 @@ var baseMixin = {
         batchFileIdsUrl: '',
         downloadFilelUrl: '/file/api/file/batchDownload',
       },
+      roleMark: localStorage.getItem('mark') || "",
       userId: localStorage.getItem('userId') || "",
       fileExt: '.xlsx',
       uploading: false,
@@ -54,7 +57,6 @@ var baseMixin = {
       cityList: [],
       districtList: [],
       menuVisible: false,
-      rowData: {},
       menuStyle: {
         position: "fixed",
         top: "0",
@@ -108,27 +110,127 @@ var baseMixin = {
         if (res.code == 0) {
           this.pagination.total = res.data.total;
           if (res.data.list) {
-            this.dataSource = res.data.list;
+            // 递归
+            let listMap = (list) => {
+              let data = [];
+              data = list.map(item => {
+                // 判断是否为子节点
+                if (item.isLeaf == 0) {
+                  // 子节点有数据
+                  if (item.children && item.children.length > 0) {
+                    listMap(item.children);
+                  } else {
+                    let loadChild = {
+                      id: `${item.id}_loadChild`,
+                      name: 'loading...',
+                      isLoading: true
+                    }
+                    item.children = [loadChild];
+                  }
+                } else {
+                  item.children = null;
+                }
+                return item
+              })
+              return [...data]
+            }
+            // 赋值
+            this.dataSource = listMap(res.data.list);
             if (res.data.list.length === 0 && this.pagination.current > 1) {
               this.pagination.current--
               this.getList()
               return
             }
+            this.refreshTable()
           } else {
             this.dataSource = [];
           }
         } else {
-          this.$notification.error({
-            message: res.msg
-          });
+          this.$notification.error(res.msg);
         }
       }).finally(() => {
         this.localLoading = false;
       })
     },
+    refreshTable() {
+      this.tableShow = false
+      this.$nextTick(() => {
+        this.tableShow = true
+      })
+    },
+    // 根据已展开的行查询数据（用于保存后刷新时异步加载子级的数据）
+    loadDataByExpandedRows(dataList) {
+      let id = this.expandedRowKeys[0]
+      if (this.expandedRowKeys.length > 0) {
+        axios({
+          url: this.Urls.subListUrl + id,
+          method: 'get'
+        }).then(res => {
+          if (res.code == 0) {
+            let childrenMap = res.data.records
+            let fn = (list) => {
+              list.forEach(data => {
+                if (this.expandedRowKeys.includes(data.id)) {
+                  data.children = childrenMap
+                  fn(data.children)
+                }
+              })
+            }
+            fn(dataList)
+          } else {
+            this.$notification.error(res.msg)
+          }
+        })
+      }
+    },
+    // 点击展开树图标
+    handleExpand(expanded, record) {
+      // this.expandedRowKeys[0] = record.id
+      // 判断是否是展开状态
+      if (expanded) {
+        // 判断子级的首个项的标记是否是“正在加载中”，如果是就加载数据
+        if (record.children[0].isLoading === true) {
+          const id = record.id
+          const data = this.dataSource
+          axios({
+            url: this.Urls.subListUrl + record.id,
+            method: 'get'
+          }).then(res => {
+            if (res.code == 0) {
+              const children = res.data.records || []
+              const dataMap = (items) => {
+                items.find((item) => {
+                  if (item.id === id) {
+                    item.children = children
+                    for (let i = 0; i < item.children.length; i++) {
+                      if (item.children[i].isLeaf == 0) {
+                        let loadChild = {
+                          id: `${item.children[i].id}_loadChild`,
+                          name: 'loading...',
+                          isLoading: true
+                        }
+                        item.children[i].children = [loadChild]
+                      }
+                    }
+                    return items
+                  }
+                  if (item.children && item.children.length > 0) {
+                    dataMap(item.children)
+                  }
+                })
+              }
+              dataMap(data || [])
+            } else {
+              this.$notification.error(res.msg)
+            }
+          })
+        }
+      }
+    },
     // 搜索查询
     handleSearch() {
       console.log('search param...', this.queryParam.condition)
+      this.queryParam.condition.parentId = null;
       this.getList(1);
       this.afterSearch();
     },
@@ -154,9 +256,7 @@ var baseMixin = {
         if (res.code == 0) {
           this.dataSource = res.data.records || [];
         } else {
-          this.$notification.error({
-            message: res.msg
-          })
+          this.$notification.error(res.msg)
         }
       })
     },
@@ -216,9 +316,7 @@ var baseMixin = {
         if (res.code == 0) {
           this[data] = res.data.records;
         } else {
-          this.$notification.error({
-            message: res.msg
-          })
+          this.$notification.error(res.msg)
         }
       })
     },
@@ -235,37 +333,59 @@ var baseMixin = {
         if (res.code == 0) {
           this[data] = res.data.records
         } else {
-          this.$notification.error({
-            message: res.msg
-          })
+          this.$notification.error(res.msg)
         }
       })
     },
 
     // 打开表单
     handleAdd() {
-      this.$refs.modalForm.add()
       this.$refs.modalForm.dialogStatus = 'add'
+      this.$refs.modalForm.isDisabled = false
+      this.$refs.modalForm.add()
+    },
+    // 添加子级
+    handleAddSub() {
+      if (this.selectedRowKeys.length == 0) {
+        this.$message.warning('请选择你要进行操作的数据!');
+        return false
+      }
+      this.$refs.modalForm.dialogStatus = 'add'
+      this.$refs.modalForm.isDisabled = true
+      this.$refs.modalForm.edit({
+        'parentId': this.selectionRows[0].id
+      });
     },
     // 表单提交之后的动作
     afterSubmit() {
       this.getList(1)
     },
     // 编辑表单
-    handleEdit(record) {
-      this.$refs.modalForm.edit(record)
+    handleEdit() {
+      console.log('此条数据', this.selectionRows)
+      if (this.selectedRowKeys.length == 0) {
+        this.$message.warning('请选择你要进行操作的数据!');
+        return false
+      }
       this.$refs.modalForm.dialogStatus = 'edit'
+      this.$refs.modalForm.isDisabled = false
+      this.$refs.modalForm.edit(this.selectionRows[0])
     },
     // 删除数据
-    handleDel(record) {
+    handleDel() {
       var _this = this
+      if (_this.selectedRowKeys.length == 0) {
+        _this.$message.warning('请选择你要进行操作的数据!');
+        return false
+      }
+      let id = _this.selectionRows[0].id
       _this.$confirm({
         title: '确定要删除该条数据？',
         content: '删除不可恢复',
         okType: 'danger',
         onOk() {
           axios({
-            url: _this.Urls.delUrl + record.id,
+            url: _this.Urls.delUrl + id,
             method: 'get'
           }).then(res => {
             if (res.code == 0) {
@@ -274,13 +394,10 @@ var baseMixin = {
               })
               _this.afterSubmit()
             } else {
-              _this.$notification.error({
-                message: res.msg
-              })
+              _this.$notification.error(res.msg)
             }
           })
-        },
-        class: 'test'
+        }
       })
     },
     // 批量删除
@@ -304,9 +421,7 @@ var baseMixin = {
               })
               _this.afterSubmit()
             } else {
-              _this.$notification.error({
-                message: res.msg
-              })
+              _this.$notification.error(res.msg)
             }
           })
         },
@@ -314,53 +429,12 @@ var baseMixin = {
       })
     },
     // 表单详情
-    handleDetail(record) {
-      this.$refs.detailForm.detail(record)
-    },
-    // 点击展开树图标
-    handleExpand(expanded, record) {
-      // 判断是否是展开状态
-      if (expanded) {
-        // 判断子级的首个项的标记是否是“正在加载中”，如果是就加载数据
-        if (record.children[0].isLoading === true) {
-          const id = record.id
-          const data = this.dataSource
-          axios({
-            url: this.Urls.subListUrl + record.id,
-            method: 'get'
-          }).then(res => {
-            if (res.code == 0) {
-              const children = res.data.records || []
-              const dataMap = (items) => {
-                items.find((item) => {
-                  if (item.id === id) {
-                    item.children = children
-                    for (let i = 0; i < item.children.length; i++) {
-                      if (item.children[i].isLeaf == 0) {
-                        let loadChild = {
-                          id: `${item.children[i].id}_loadChild`,
-                          name: 'loading...',
-                          isLoading: true
-                        }
-                        item.children[i].children = [loadChild]
-                      }
-                    }
-                    return items
-                  }
-                  if (item.children && item.children.length > 0) {
-                    dataMap(item.children)
-                  }
-                })
-              }
-              dataMap(data || [])
-            } else {
-              this.$notification.error({
-                message: res.msg
-              })
-            }
-          })
-        }
+    handleDetail() {
+      if (this.selectedRowKeys.length == 0) {
+        this.$message.warning('请选择你要进行操作的数据!');
+        return false
       }
+      this.$refs.detailForm.detail(this.selectionRows[0])
     },
 
     // 验证Excel表格式
@@ -402,9 +476,7 @@ var baseMixin = {
           })
           this.getList(1)
         } else {
-          this.$notification.error({
-            message: res.msg
-          })
+          this.$notification.error(res.msg)
         }
       }).finally(() => {
         this.uploading = false;
@@ -418,7 +490,7 @@ var baseMixin = {
     handleMenuClick(e) {
       if (this.selectedRowKeys.length == 0) {
         this.$notification.warning({
-          message: '请至少选择一条数据'
+          message: '请选择你要进行操作的数据!'
         })
         return
       }
@@ -506,7 +578,7 @@ var baseMixin = {
         }
       })
     },
-    handleProviceChange(val) {
+    handleProvinceChange(val) {
       this.getArea(val, 'cityList')
     },
     handleCityChange(val) {
@@ -525,14 +597,24 @@ var baseMixin = {
     rowClick(record, index) {
       return {
         on: {
+          click: (e) => {
+            e.preventDefault();
+            let keys = [],
+              rows = [];
+            keys.push(record.id)
+            rows.push(record)
+            this.selectedRowKeys = keys
+            this.selectionRows = rows
+          },
           contextmenu: (e) => {
             e.preventDefault();
-            this.rowData = record
+            let keys = []
+            keys.push(record.id)
+            this.selectedRowKeys = keys
             this.menuVisible = true;
             this.menuStyle.top = e.clientY + "px";
             this.menuStyle.left = e.clientX + "px";
             document.addEventListener("click", this.cancelClick);
-            // this.handleDetail(record)
           }
         }
       }
@@ -550,7 +632,26 @@ var baseMixin = {
       this.columns = newColumns.filter((item) => {
         return item.isShow == true
       })
-    }
+    },
+    // 列表过滤表头标题
+    filterName(array, text) {
+      if (!text) {
+        return "无"
+      } else {
+        let obj = array.find((item, index) => {
+          if (item.key == text) {
+            return item.name
+          }
+        })
+        return obj.name
+      }
+    },
+    mapTreeLeaf(item) {
+      const haveChildren = Array.isArray(item.children) && item.children.length > 0
+      item.isLeaf = item.isLeaf == 1 ? true : false
+      item.children = haveChildren ? item.children.map(i => this.mapTreeLeaf(i)) : []
+      return item
+    },
   }
 }
 export default baseMixin

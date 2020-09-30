@@ -11,6 +11,7 @@ import {
   Radio,
   Checkbox,
   Select,
+  TreeSelect,
   Card,
   Form,
   Row,
@@ -30,6 +31,7 @@ import {
   Menu,
   Drawer,
   Tooltip,
+  Tree,
   Alert,
   Tag,
   Divider,
@@ -67,6 +69,7 @@ Vue.use(Switch)
 Vue.use(Radio)
 Vue.use(Checkbox)
 Vue.use(Select)
+Vue.use(TreeSelect)
 Vue.use(Card)
 Vue.use(Form)
 Vue.use(Row)
@@ -86,6 +89,7 @@ Vue.use(Spin)
 Vue.use(Menu)
 Vue.use(Drawer)
 Vue.use(Tooltip)
+Vue.use(Tree)
 Vue.use(Alert)
 Vue.use(Tag)
 Vue.use(Divider)

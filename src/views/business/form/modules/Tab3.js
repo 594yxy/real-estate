@@ -1,7 +1,6 @@
 import {
   axios
 } from '@/utils/request'
-import pick from 'lodash.pick'
 
 var indexMixin = {
   props: {
@@ -13,8 +12,8 @@ var indexMixin = {
   data() {
     return {
       Urls: {
-        addUrl: '/api/business/temp',
-        editUrl: '/api/business/update/'
+        addUrl: '/biz/api/business/temp',
+        editUrl: '/biz/api/business/update/'
       },
       labelCol: {
         xxl: {
@@ -67,46 +66,82 @@ var indexMixin = {
         },
       },
       gutter: 15,
-      downPayList: [],
-      model: {
-        loan: {},
-        property: {}
-      },
       loanTypeList: [],
-      bankList: []
+      busTypeList: [],
+      bankList: [],
+      tips: {
+        add: '贷款信息保存成功',
+        edit: '贷款信息保存成功'
+      },
+    }
+  },
+  watch: {
+    'model.loan.loanSubType': {
+      handler: function (val) {
+        if (!val) {
+          this.model.loan.loanSubType = undefined
+        }
+      },
+      deep: true
+    },
+    'model.loan.loanType': {
+      handler: function (val) {
+        if (!val) {
+          this.model.loan.loanType = undefined
+        }
+      },
+      deep: true
+    },
+    'model.supervisoryBankName': {
+      handler: function (val) {
+        if (!val) {
+          this.model.supervisoryBankName = undefined
+        }
+      },
+      deep: true
+    },
+    'model.property.isMortgage': {
+      handler: function (val) {
+        if (val == null) {
+          this.model.property.isMortgage = undefined
+        }
+      },
+      deep: true
     }
   },
   filters: {},
   created() {
     this.model = this.info
+    console.log('贷款信息', this.model.loan)
     this.getDictData('loan_type', 'loanTypeList')
     this.getDictData('bank_code', 'bankList')
+    this.getDictData('business_type', 'busTypeList')
   },
   methods: {
     afterSubmit(data) {
-      this.model = data
+      this.$nextTick(() => {
+        this.model = data
+      })
     },
     handleReturn() {
       this.$emit('prevStep')
     },
     // 追加首付
     addDownPayAmount() {
-      this.downPayList.push({})
+      this.model.downPayment.push({})
     },
     delDownPayAmount(i) {
-      this.downPayList.splice(i, 1)
+      this.model.downPayment.splice(i, 1)
     },
     // 计算贷款额度
     handleCalculate() {
       this.$refs.loadModal.add()
     },
     // 多图片上传
-    setFileValue(fileList, type, fileId) {
-      let ids = fileList.map((item, index) => {
-        this.fileIds.push(item.id)
-        return item.id
-      })
-      this.model[type][fileId] = ids.join()
+    setFileValue(ids, type, field) {
+      console.log('多', ids)
+      this.fileIds = [this.fileIds, ...ids]
+      this.$set(this.model[type], `${field}`, ids.join())
     },
   },
 }

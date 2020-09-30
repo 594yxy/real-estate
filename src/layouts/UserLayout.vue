@@ -66,13 +66,13 @@ export default {
 
     .wrap {
       background-color: #fff;
-      padding: 24px 32px;
-      border-radius: 4px;
+      padding: 32px 32px 16px;
+      border-radius: 8px;
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.45);
+      box-shadow: 0 3px 5px rgba(0, 0, 0, 0.2);
     }
 
     a {
@@ -81,7 +81,6 @@ export default {
 
     .top {
       text-align: center;
-      margin-top: 12px;
 
       .header {
         .badge {
@@ -103,7 +102,7 @@ export default {
         }
 
         .title {
-          font-size: 26px;
+          font-size: 24px;
           color: rgba(0, 0, 0, 0.85);
           font-family: Avenir, 'Helvetica Neue', Arial, Helvetica, sans-serif;
           font-weight: 600;
@@ -120,10 +119,10 @@ export default {
     }
 
     .main {
-      min-width: 320px;
-      width: 368px;
+      max-width: 360px;
+      width: 340px;
       margin: 0 auto;
-      margin-top: 32px;
+      padding-top: 24px;
     }
 
     .footer {

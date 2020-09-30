@@ -5,26 +5,48 @@ import moment from 'moment'
 
 var modalMixin = {
   data() {
-    const rules = {
-      must: {
+    let rules = {
+      blur: {
         required: true,
-        message: '此字段为必填！',
+        message: '此项为必填！',
         trigger: 'blur'
       },
-      select: {
+      change: {
         required: true,
         message: '请选择对应选项！',
         trigger: 'change'
       },
       phone: [{
         required: true,
-        message: '此字段为必填！',
-        trigger: 'blur'
+        message: '此项为必填！'
       }, {
-        validator: this.validator.validatePhone,
+        validator: this.validator.phone,
         trigger: 'change'
       }],
-    }
+      bankCardNo: [{
+        required: true,
+        message: '此项为必填！'
+      }, {
+        validator: this.validator.bankCardNo,
+        trigger: 'change'
+      }],
+      date: [{
+        required: true,
+        message: '请输入到期日期！'
+      }, {
+        validator: this.validator.date,
+        trigger: 'change'
+      }]
+    };
+
+    function getBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader()
+        reader.readAsDataURL(file)
+        reader.onload = () => resolve(reader.result)
+        reader.onerror = (error) => reject(error)
+      })
+    };
     return {
       labelCol: {
         xs: {
@@ -46,9 +68,8 @@ var modalMixin = {
         addUrl: '',
         editUrl: '',
         getByIdUrl: '',
-        projectByIdUrl: '/biz/oaProject/get/',
-        dictTypeUrl: '/api/dict/typeList',
-        editKeyValueUrl: '/api/setting/update/'
+        dictTypeUrl: '/biz/api/dict/typeList',
+        areaListUrl: '/auth/api/area/children/',
       },
       visible: false,
       confirmLoading: false,
@@ -70,6 +91,9 @@ var modalMixin = {
       userId: localStorage.getItem('userId') || "",
       // gender
       genderList: [],
+      provinceList: [],
+      cityList: [],
+      districtList: [],
       ruleForm: {}
     }
   },
@@ -114,9 +138,7 @@ var modalMixin = {
         if (res.code == 0) {
           this.setForm(res.data)
         } else {
-          this.$notification.error({
-            message: res.msg
-          })
+          this.$notification.error(res.msg)
         }
       }).catch(() => {
         this.confirmLoading = false
@@ -127,36 +149,38 @@ var modalMixin = {
       e.preventDefault();
       this.$refs.ruleForm.validate(valid => {
         this.confirmLoading = true
-        console.log('验证', valid)
-        // if (valid) {
-        let dataObj = this.beforeSubmit(this.model)
-        console.log('submit!', dataObj)
-        /* axios({
-          url: this.model.id ? (this.Urls.editUrl + this.model.id) : this.Urls.addUrl,
-          method: 'post',
-          data: dataObj
-        }).then(res => {
-          this.confirmLoading = false
-          if (res.code == 0) {
-            this.$notification.success({
-              message: this.model.id ? this.tips.edit : this.tips.add
-            })
-            this.close()
-            this.afterSubmit(res.data)
-            this.$emit('ok', res.data)
-          } else {
-            this.$notification.error({
-              message: res.msg
-            })
-          }
-        }).catch(() => {
-          this.confirmLoading = false
-        }) */
-        /* } else {
-          console.log('error submit!!');
+        console.log('valid form', valid)
+        if (valid) {
+          let dataObj = this.beforeSubmit(this.model)
+          console.log('submit!', dataObj)
+          axios({
+            url: this.model.id ? (this.Urls.editUrl + this.model.id) : this.Urls.addUrl,
+            method: 'post',
+            data: dataObj
+          }).then(res => {
+            this.confirmLoading = false
+            if (res.code == 0) {
+              this.$notification.success({
+                message: this.model.id ? this.tips.edit : this.tips.add
+              })
+              this.close()
+              let resData = res.data;
+              this.afterSubmit(resData)
+              this.$emit('ok', resData)
+            } else {
+              this.batchDelFile()
+              this.$notification.error(res.msg)
+            }
+          }).catch(() => {
+            this.batchDelFile()
+            this.confirmLoading = false
+          })
+        } else {
+          this
+          console.log('error submit!!', this.model);
           this.confirmLoading = false
           return false;
-        } */
+        }
       });
     },
     beforeSubmit(form) {
@@ -186,9 +210,7 @@ var modalMixin = {
         if (res.code == 0) {
           this[data] = res.data.records
         } else {
-          this.$notification.error({
-            message: res.msg
-          })
+          this.$notification.error(res.msg)
         }
       })
     },
@@ -218,15 +240,23 @@ var modalMixin = {
     },
 
     // 提交如果报错 删除所有图片
-    batchDelFile(ids) {
+    batchDelFile() {
+      console.log('del ids', this.fileIds)
+      if (this.fileIds.length == 0) {
+        return false
+      }
       axios({
-        url: this.Urls.batchDelFileUrl,
+        url: '/file/api/file/deletes',
         method: 'post',
         data: {
-          ids: ids.join()
+          ids: this.fileIds
         }
       }).then(res => {
-        if (res.code == 0) {} else {}
+        if (res.code == 0) {
+
+        } else {
+          this.$notification.error(res.msg)
+        }
       }).catch(() => {})
     },
 
@@ -237,13 +267,27 @@ var modalMixin = {
       // return current && current < moment().subtract(1, "days");
       return current && current.valueOf() >= new Date();
     },
-    getBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.readAsDataURL(file)
-        reader.onload = () => resolve(reader.result)
-        reader.onerror = (error) => reject(error)
+    // 地区数据
+    getArea(id, data) {
+      axios({
+        url: this.Urls.areaListUrl + id,
+        method: 'get'
+      }).then(res => {
+        if (res.code == 0) {
+          this[data] = res.data.records;
+        } else {
+
+        }
       })
+    },
+    handleProvinceChange(val) {
+      this.getArea(val, 'cityList')
+    },
+    handleCityChange(val) {
+      this.getArea(val, 'districtList')
+    },
+    OCRBeforeUpload() {
+      return false
     }
   }
 }

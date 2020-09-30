@@ -26,9 +26,8 @@ var modalMixin = {
         addUrl: '',
         editUrl: '',
         getByIdUrl: '',
-        projectByIdUrl: '/biz/oaProject/get/',
-        dictTypeUrl: '/api/dict/typeList',
-        editKeyValueUrl: '/api/setting/update/'
+        dictTypeUrl: '/biz/api/dict/typeList',
+        areaListUrl: '/auth/api/area/children/',
       },
       form: this.$form.createForm(this),
       visible: false,
@@ -49,7 +48,7 @@ var modalMixin = {
         must: {
           rules: [{
             required: true,
-            message: '此字段为必填项！'
+            message: '此项为必填！'
           }]
         },
         phone: {
@@ -66,7 +65,10 @@ var modalMixin = {
       roleMark: localStorage.getItem('mark') || "",
       userId: localStorage.getItem('userId') || "",
       // gender
-      genderList: []
+      genderList: [],
+      provinceList: [],
+      cityList: [],
+      districtList: []
     }
   },
   filters: {
@@ -81,9 +83,7 @@ var modalMixin = {
   methods: {
 
     // 表单打开之前
-    beforeOpen() {
-      this.fileList = []
-    },
+    beforeOpen() {},
 
     // 新增表单
     add() {
@@ -92,10 +92,10 @@ var modalMixin = {
 
     // 修改表单
     edit(record) {
+      this.visible = true
       this.beforeOpen(record)
       this.form.resetFields()
       this.model = Object.assign({}, record)
-      this.visible = true
       this.setForm(this.model)
     },
 
@@ -122,9 +122,7 @@ var modalMixin = {
         if (res.code == 0) {
           this.setForm(res.data)
         } else {
-          this.$notification.error({
-            message: res.msg
-          })
+          this.$notification.error(res.msg)
         }
       }).catch(() => {
         this.confirmLoading = false
@@ -154,9 +152,7 @@ var modalMixin = {
               this.afterSubmit()
               this.$emit('ok')
             } else {
-              this.$notification.error({
-                message: res.msg
-              })
+              this.$notification.error(res.msg)
             }
           }).catch(() => {
             this.localLoading = false
@@ -191,9 +187,7 @@ var modalMixin = {
         if (res.code == 0) {
           this[data] = res.data.records
         } else {
-          this.$notification.error({
-            message: res.msg
-          })
+          this.$notification.error(res.msg)
         }
       })
     },
@@ -242,14 +236,47 @@ var modalMixin = {
       // return current && current < moment().subtract(1, "days");
       return current && current.valueOf() >= new Date();
     },
-    getBase64(file) {
-      return new Promise((resolve, reject) => {
-        const reader = new FileReader()
-        reader.readAsDataURL(file)
-        reader.onload = () => resolve(reader.result)
-        reader.onerror = (error) => reject(error)
+
+    // 地区数据
+    getArea(id, data) {
+      axios({
+        url: this.Urls.areaListUrl + id,
+        method: 'get'
+      }).then(res => {
+        if (res.code == 0) {
+          this[data] = res.data.records;
+        } else {
+
+        }
       })
-    }
+    },
+    handleProvinceChange(val) {
+      this.getArea(val, 'cityList')
+    },
+    handleCityChange(val) {
+      this.getArea(val, 'districtList')
+    },
+    // 格式化树
+    mapTreeLeaf(item) {
+      const haveChildren = Array.isArray(item.children) && item.children.length > 0
+      item.isLeaf = item.isLeaf == 1 ? true : false
+      item.children = haveChildren ? item.children.map(i => this.mapTreeLeaf(i)) : []
+      return item
+    },
+    // 获取树级
+    getTreeData() {
+      axios({
+        url: this.Urls.treeListUrl,
+        method: 'get',
+      }).then((res) => {
+        if (res.code == 0) {
+          let resData = res.data.records || []
+          this.treeData[0].children = resData.map((item) => this.mapTreeLeaf(item))
+        } else {
+          this.$notification.error(res.msg)
+        }
+      })
+    },
   }
 }
 export default modalMixin

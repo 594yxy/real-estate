@@ -82,6 +82,10 @@ var indexMixin = {
       },
     ];
     return {
+      Urls: {
+        addUrl: '/biz/api/business/temp',
+        editUrl: '/biz/api/business/update/'
+      },
       activeKey: panes[0].key,
       panes,
       gutter: 15,

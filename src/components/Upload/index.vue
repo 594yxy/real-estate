@@ -16,7 +16,7 @@
         <img src="@/assets/img/household2.png" v-if="isHouse2" />
       </div>
       <a-icon :type="loading ? 'loading' : 'plus'" />
-      <div class="ant-upload-text">{{tip}}</div>
+      <div class="ant-upload-text">{{ tip }}</div>
     </template>
   </a-upload>
 </template>
@@ -51,7 +51,7 @@ export default {
       type: Boolean,
       default: false,
     },
-    imageId: {
+    ids: {
       type: String,
       default: '',
     },
@@ -91,7 +91,7 @@ export default {
       formData.append('file', file)
       this.loading = true
       axios({
-        url: this.Urls.imgUploadUrl,
+        url: '/file/api/file/upload',
         method: 'post',
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -125,17 +125,15 @@ export default {
           ids: ids,
         },
       }).then((res) => {
-        console.log('qie', res)
         if (res.code == 0) {
           this.imageUrl = res.data[0].url
         }
-        this.imageUrl = 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'
       })
     },
   },
   created() {
-    if (this.imageId) {
-      this.getImgUrl(this.imageId)
+    if (this.ids) {
+      this.getImgUrl(this.ids)
     }
   },
   mounted() {},

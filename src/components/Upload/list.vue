@@ -6,11 +6,11 @@
       @preview="handlePreview"
       class="file-uploader"
       :before-upload="beforeUpload"
-      @change="handleChange"
+      :remove="handleRemove"
     >
-      <template v-if="fileList.length < 8">
+      <template v-if="plus">
         <a-icon type="plus" />
-        <div class="ant-upload-text">Upload</div>
+        <div class="ant-upload-text">点击上传</div>
       </template>
     </a-upload>
     <viewer :images="images" @inited="inited" class="viewer" ref="viewer">
@@ -32,47 +32,27 @@ import { axios } from '@/utils/request'
 export default {
   name: 'UploadList',
   components: {},
-  props: {},
+  props: {
+    plus: {
+      type: Boolean,
+      default: true,
+    },
+    ids: {
+      type: String,
+      default: '',
+    },
+  },
   data() {
     return {
       Urls: {
         imgListUrl: '/file/api/file/batchSelect',
+        delFileUrl: '/file/api/file/delete/',
       },
       images: [],
       viewerShow: false,
       previewVisible: false,
       previewImage: '',
-      fileList: [
-        {
-          uid: '-1',
-          name: 'image.png',
-          status: 'done',
-          url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-        },
-        {
-          uid: '-2',
-          name: 'image.png',
-          status: 'done',
-          url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-        },
-        {
-          uid: '-3',
-          name: 'image.png',
-          status: 'done',
-          url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-        },
-        {
-          uid: '-4',
-          name: 'image.png',
-          status: 'done',
-          url: 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png',
-        },
-        {
-          uid: '-5',
-          name: 'image.png',
-          status: 'error',
-        },
-      ],
+      fileList: [],
     }
   },
   computed: {},
@@ -86,25 +66,93 @@ export default {
         file.preview = await getBase64(file.originFileObj)
       }
       this.images = file.url.split() || file.preview.split()
-      console.log('image', this.images)
       this.$viewer.show()
+    },
+    handleRemove(file) {
+      if (this.plus) {
+        axios({
+          url: this.Urls.delFileUrl + file.uid,
+          method: 'get',
+        }).then((res) => {
+          if (res.code == 0) {
+            this.$notification.success({
+              message: '删除成功',
+            })
+            const index = this.fileList.indexOf(file)
+            const newFileList = this.fileList.slice()
+            newFileList.splice(index, 1)
+            this.fileList = newFileList
+
+            let fileIds = this.fileList.map((item) => {
+              return item.uid
+            })
+            this.$emit('setFileValue', fileIds)
+          } else {
+            this.$notification.error({
+              message: res.msg,
+            })
+          }
+        })
+      } else {
+        return false
+      }
     },
     // 格式限制
     beforeUpload(file) {
       const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
       if (!isJpgOrPng) {
         this.$message.error('你只能上传图片!')
+        return false
       }
       const isLt2M = file.size / 1024 / 1024 < 2
       if (!isLt2M) {
         this.$message.error('图片大小不能超过2M!')
+        return false
       }
-      return isJpgOrPng && isLt2M
+      this.uploadImgList(file)
+      return false
     },
-    handleChange({ fileList }) {
-      this.fileList = fileList
+    uploadImgList(file) {
+      const formData = new FormData()
+      formData.append('file', file)
+      /* this.fileList.forEach((file) => {
+        formData.append('files[]', file)
+      }) */
+      this.uploading = true
+      axios({
+        url: '/file/api/file/upload',
+        method: 'post',
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+        timeout: 0,
+        data: formData,
+      })
+        .then((res) => {
+          this.uploading = false
+          if (res.code == 0) {
+            this.fileList.push({
+              uid: res.data.id,
+              name: res.data.name,
+              status: res.data.status,
+              url: res.data.url,
+              ext: res.data.ext,
+            })
+            let fileIds = this.fileList.map((item) => {
+              return item.uid
+            })
+            this.$emit('setFileValue', fileIds)
+          } else {
+            this.$notification.error({
+              message: res.msg,
+            })
+          }
+        })
+        .finally(() => {
+          this.uploading = false
+        })
     },
-    getSingleImgUrl(ids) {
+    geImgtList(ids) {
       axios({
         url: this.Urls.imgListUrl,
         method: 'get',
@@ -112,15 +160,20 @@ export default {
           ids: ids,
         },
       }).then((res) => {
-        console.log('qie', res)
         if (res.code == 0) {
-          this.imageUrl = res.data[0].url
+          this.fileList = res.data.map((item, index) => {
+            item.uid = item.id
+            return item
+          })
         }
-        this.imageUrl = 'https://zos.alipayobjects.com/rmsportal/jkjgkEfvpUPVyRjUImniVslZfWPnJuuZ.png'
       })
     },
   },
-  created() {},
+  created() {
+    if (this.ids) {
+      this.geImgtList(this.ids)
+    }
+  },
   mounted() {},
 }
 </script>

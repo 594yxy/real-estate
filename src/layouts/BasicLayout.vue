@@ -13,11 +13,7 @@
   >
     <setting-drawer :settings="settings" @change="handleSettingChange" v-if="isProPreviewSite" />
     <template v-slot:rightContentRender>
-      <right-content
-        :top-menu="settings.layout === 'topmenu'"
-        :is-mobile="isMobile"
-        :theme="settings.theme"
-      />
+      <right-content :top-menu="settings.layout === 'topmenu'" :is-mobile="isMobile" :theme="settings.theme" />
     </template>
     <template v-slot:footerRender>
       <global-footer />
@@ -60,7 +56,7 @@ export default {
         // 布局类型
         layout: defaultSettings.layout, // 'sidemenu', 'topmenu'
         // 定宽: true / 流式: false
-        contentWidth: defaultSettings.layout === 'sidemenu' ? "Fluid" : defaultSettings.contentWidth === 'Fixed',
+        contentWidth: defaultSettings.layout === 'sidemenu' ? 'Fluid' : defaultSettings.contentWidth === 'Fixed',
         // 主题 'dark' | 'light'
         theme: defaultSettings.navTheme,
         // 主色调
@@ -88,6 +84,7 @@ export default {
   created() {
     /* const routes = this.mainMenu.find(item => item.path === '/')
     this.menus = (routes && routes.children) || [] */
+    this.getPermissionList()
     const routes = asyncRouterMap.find((item) => item.path === '/')
     this.menus = (routes && routes.children) || []
     // 处理侧栏收起状态
@@ -116,6 +113,19 @@ export default {
     }
   },
   methods: {
+    getPermissionList() {
+      this.$store
+        .dispatch('GetInfo')
+        .then((res) => {
+          console.log('menu', res)
+        })
+        .catch(() => {
+          this.$notification.error({
+            message: res.msg || '服务请求超时',
+            description: '请求权限信息失败，请重试',
+          })
+        })
+    },
     i18nRender,
     handleMediaQuery(val) {
       this.query = val

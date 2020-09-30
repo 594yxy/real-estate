@@ -2,7 +2,7 @@
   <a-form-model ref="ruleForm" :model="model" class="my-form">
     <a-spin :spinning="confirmLoading">
       <div class="card-wrap">
-        <a-card :bodyStyle="{padding: 0}">
+        <a-card :bodyStyle="{ padding: 0 }">
           <LoanAmountCal ref="loadModal" />
           <div class="card-item" style="margin-bottom: 8px">
             <a-row :gutter="gutter">
@@ -16,7 +16,8 @@
                     :wrapperCol="wrapperRowCol"
                     label="编号"
                     style="margin-bottom: 0"
-                  >{{model.id}}</a-form-model-item>
+                    >{{ model.id }}</a-form-model-item
+                  >
                 </a-col>
                 <a-col :xs="24" :sm="24" :md="12" :xl="8">
                   <a-form-model-item
@@ -24,7 +25,8 @@
                     :wrapperCol="wrapperCol"
                     label="日期"
                     style="margin-bottom: 0"
-                  >{{model.createTime}}</a-form-model-item>
+                    >{{ model.createTime }}</a-form-model-item
+                  >
                 </a-col>
               </template>
               <a-col :xs="24" :sm="24" :md="12" :xl="8">
@@ -33,7 +35,7 @@
                   :wrapperCol="wrapperCol"
                   label="贷款品类"
                   prop="loan.loanSubType"
-                  :rules="rules.must"
+                  :rules="rules.change"
                 >
                   <a-select placeholder="请选择" v-model="model.loan.loanSubType">
                     <a-select-option v-for="item in loanTypeList" :key="item.key">{{ item.value }}</a-select-option>
@@ -46,10 +48,10 @@
                   :wrapperCol="wrapperCol"
                   label="业务类型"
                   prop="loan.loanType"
-                  :rules="rules.must"
+                  :rules="rules.change"
                 >
                   <a-select placeholder="请选择" v-model="model.loan.loanType">
-                    <a-select-option v-for="item in loanTypeList" :key="item.key">{{ item.value }}</a-select-option>
+                    <a-select-option v-for="item in busTypeList" :key="item.key">{{ item.value }}</a-select-option>
                   </a-select>
                 </a-form-model-item>
               </a-col>
@@ -69,130 +71,131 @@
                   :wrapperCol="wrapperCol"
                   label="成交金额"
                   prop="loan.finalPrice"
-                  :rules="rules.must"
+                  :rules="rules.blur"
                 >
                   <a-input
-                    suffix="元"
                     type="number"
+                    step="0.01"
+                    min="0"
+                    suffix="元"
                     placeholder="请输入成交金额"
                     v-model="model.loan.finalPrice"
                   />
                 </a-form-model-item>
               </a-col>
-              <a-col :xs="24" :sm="24" :md="12" :xl="8">
-                <a-form-model-item
-                  :labelCol="labelCol"
-                  :wrapperCol="wrapperCol"
-                  label="公积金余额"
-                  prop="loan.fundSum"
-                  :rules="rules.must"
-                >
-                  <a-input
-                    suffix="元"
-                    type="number"
-                    placeholder="请输入公积金余额"
-                    v-model="model.loan.fundSum"
-                  />
-                </a-form-model-item>
-              </a-col>
+              <template v-if="model.loan.loanType != '02'">
+                <a-col :xs="24" :sm="24" :md="12" :xl="8">
+                  <a-form-model-item
+                    :labelCol="labelCol"
+                    :wrapperCol="wrapperCol"
+                    label="公积金金额"
+                    prop="loan.fundSum"
+                    :rules="rules.blur"
+                  >
+                    <a-input
+                      suffix="元"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="请输入公积金金额"
+                      v-model="model.loan.fundSum"
+                    />
+                  </a-form-model-item>
+                </a-col>
+              </template>
               <a-col :xs="24" :sm="24" :md="12" :xl="8">
                 <a-form-model-item
                   :labelCol="labelCol"
                   :wrapperCol="wrapperCol"
                   label="首付金额"
                   prop="loan.downPayment"
-                  :rules="rules.must"
+                  :rules="rules.blur"
                 >
                   <a-input
                     suffix="元"
                     type="number"
+                    step="0.01"
+                    min="0"
                     placeholder="请输入首付金额"
                     v-model="model.loan.downPayment"
                   >
                     <template slot="addonAfter">
-                      <a-popover placement="right" trigger="click">
-                        <template slot="content">
-                          <a-button
-                            size="small"
-                            style="margin-bottom: 10px"
-                            icon="plus"
-                            @click="addDownPayAmount"
-                          >追加首付</a-button>
-                          <a-form-model-item
-                            style="margin-bottom: 5px"
-                            v-for="(k, index) in downPayList"
-                            :key="index"
-                          >
-                            <a-input
-                              suffix="元"
-                              type="number"
-                              placeholder="请输入追加金额"
-                              v-decorator="[`downPay${index}`, validatorRules.must]"
-                            >
-                              <a-icon
-                                slot="addonAfter"
-                                class="read-card-icon"
-                                type="minus-circle-o"
-                                @click="delDownPayAmount(index)"
-                              />
-                            </a-input>
-                          </a-form-model-item>
-                        </template>
-                        <a-icon type="plus-square" class="read-card-icon" />
-                      </a-popover>
+                      <a-icon type="plus-square" class="read-card-icon" @click="addDownPayAmount" />
                     </template>
                   </a-input>
                 </a-form-model-item>
               </a-col>
-              <a-col :xs="24" :sm="24" :md="12" :xl="8">
+              <template v-if="model.loan.loanType == '02' || model.loan.loanType == '03'">
+                <a-col :xs="24" :sm="24" :md="12" :xl="8">
+                  <a-form-model-item
+                    :labelCol="labelCol"
+                    :wrapperCol="wrapperCol"
+                    label="商贷金额"
+                    prop="loan.commercialSum"
+                    :rules="rules.blur"
+                  >
+                    <a-input
+                      suffix="元"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="请输入商贷金额"
+                      v-model="model.loan.commercialSum"
+                    />
+                  </a-form-model-item>
+                </a-col>
+                <a-col :xs="24" :sm="24" :md="12" :xl="8">
+                  <a-form-model-item
+                    :labelCol="labelCol"
+                    :wrapperCol="wrapperCol"
+                    label="贷款期数"
+                    prop="loan.comclTimeLimit"
+                    :rules="rules.blur"
+                  >
+                    <a-input
+                      suffix="月"
+                      type="number"
+                      min="1"
+                      placeholder="请输入贷款期限"
+                      v-model="model.loan.comclTimeLimit"
+                    />
+                  </a-form-model-item>
+                </a-col>
+                <a-col :xs="24" :sm="24" :md="12" :xl="8">
+                  <a-form-model-item
+                    :labelCol="labelCol"
+                    :wrapperCol="wrapperCol"
+                    label="贷款银行"
+                    prop="loan.loanBankName"
+                    :rules="rules.blur"
+                  >
+                    <a-select placeholder="请选择" v-model="model.loan.loanBankName">
+                      <a-select-option v-for="item in bankList" :key="item.key">{{ item.value }}</a-select-option>
+                    </a-select>
+                  </a-form-model-item>
+                </a-col>
+              </template>
+            </a-row>
+            <a-row :gutter="gutter">
+              <a-col :xs="24" :sm="24" :md="12" :xl="8" v-for="(pay, payIndex) in model.downPayment" :key="payIndex">
                 <a-form-model-item
                   :labelCol="labelCol"
                   :wrapperCol="wrapperCol"
-                  label="商贷金额"
-                  prop="loan.commercialSum"
-                  :rules="rules.must"
+                  label="追加首付"
+                  :prop="'downPayment[' + payIndex + '].sum'"
+                  :rules="rules.blur"
                 >
-                  <a-input
-                    suffix="元"
-                    type="number"
-                    placeholder="请输入商贷金额"
-                    v-model="model.loan.commercialSum"
-                  />
-                </a-form-model-item>
-              </a-col>
-              <a-col :xs="24" :sm="24" :md="12" :xl="8">
-                <a-form-model-item
-                  :labelCol="labelCol"
-                  :wrapperCol="wrapperCol"
-                  label="贷款期数"
-                  prop="loan.comclTimeLimit"
-                  :rules="rules.must"
-                >
-                  <a-input
-                    suffix="月"
-                    type="number"
-                    placeholder="请输入贷款期限"
-                    v-model="model.loan.comclTimeLimit"
-                  />
-                </a-form-model-item>
-              </a-col>
-              <a-col :xs="24" :sm="24" :md="12" :xl="8">
-                <a-form-model-item
-                  :labelCol="labelCol"
-                  :wrapperCol="wrapperCol"
-                  label="贷款银行"
-                  prop="loan.loanBankName"
-                  :rules="rules.must"
-                >
-                  <a-select placeholder="请选择" v-model="model.loan.loanBankName">
-                    <a-select-option v-for="item in bankList" :key="item.key">{{ item.value }}</a-select-option>
-                  </a-select>
+                  <a-input suffix="元" type="number" step="0.01" min="0" placeholder="请输入商贷金额" v-model="pay.sum">
+                    <template slot="addonAfter">
+                      <a-icon type="minus-square" class="read-card-icon" @click="delDownPayAmount(payIndex)" />
+                    </template>
+                  </a-input>
                 </a-form-model-item>
               </a-col>
             </a-row>
           </div>
           <!-- 监管账户 -->
-          <div class="card-item" style="margin-bottom: 8px">
+          <div class="card-item" style="margin-bottom: 8px" v-if="model.loan.loanType != '02'">
             <a-row :gutter="gutter">
               <a-col :xs="24" :sm="24" :md="12" :xl="8">
                 <a-form-model-item
@@ -200,7 +203,7 @@
                   :wrapperCol="wrapperCol"
                   label="监管银行"
                   prop="supervisoryBankName"
-                  :rules="rules.must"
+                  :rules="rules.blur"
                 >
                   <a-select placeholder="请选择" v-model="model.supervisoryBankName">
                     <a-select-option v-for="item in bankList" :key="item.key">{{ item.value }}</a-select-option>
@@ -213,7 +216,7 @@
                   :wrapperCol="wrapperCol"
                   label="监管账户"
                   prop="supervisoryBankAccount"
-                  :rules="rules.must"
+                  :rules="rules.blur"
                 >
                   <a-input placeholder="请输入监管账户" v-model="model.supervisoryBankAccount" />
                 </a-form-model-item>
@@ -229,7 +232,7 @@
                   :wrapperCol="wrapperCol"
                   label="权利人"
                   prop="property.propertyOwner"
-                  :rules="rules.must"
+                  :rules="rules.blur"
                 >
                   <a-input placeholder="请输入权利人" v-model="model.property.propertyOwner" />
                 </a-form-model-item>
@@ -240,7 +243,7 @@
                   :wrapperCol="wrapperCol"
                   label="产权证号"
                   prop="property.propertyNo"
-                  :rules="rules.must"
+                  :rules="rules.blur"
                 >
                   <a-input placeholder="请输入产权证号" v-model="model.property.propertyNo" />
                 </a-form-model-item>
@@ -251,11 +254,13 @@
                   :wrapperCol="wrapperCol"
                   label="房屋面积"
                   prop="property.builtUpArea"
-                  :rules="rules.must"
+                  :rules="rules.blur"
                 >
                   <a-input
                     suffix="平方米"
                     type="number"
+                    step="0.01"
+                    min="0"
                     placeholder="请输入房屋面积"
                     v-model="model.property.builtUpArea"
                   />
@@ -267,7 +272,7 @@
                   :wrapperCol="wrapperCol"
                   label="权属情况"
                   prop="property.isMortgage"
-                  :rules="rules.must"
+                  :rules="rules.change"
                 >
                   <a-select placeholder="请选择" v-model="model.property.isMortgage">
                     <a-select-option :value="1">有抵押</a-select-option>
@@ -281,9 +286,9 @@
                   :wrapperCol="wrapperRowCol"
                   label="房屋地址"
                   prop="property.propertyAddr"
-                  :rules="rules.must"
+                  :rules="rules.blur"
                 >
-                  <a-input read-only placeholder="请输入你的详细地址" v-model="model.property.propertyAddr" />
+                  <a-input placeholder="请输入你的详细地址" v-model="model.property.propertyAddr" />
                 </a-form-model-item>
               </a-col>
               <a-col :xs="24" :sm="24" :md="12" :xl="8">
@@ -292,11 +297,12 @@
                   :wrapperCol="wrapperCol"
                   label="房龄"
                   prop="property.housingAge"
-                  :rules="rules.must"
+                  :rules="rules.blur"
                 >
                   <a-input
                     suffix="年"
                     type="number"
+                    min="0"
                     placeholder="请输入房龄"
                     v-model="model.property.housingAge"
                   />
@@ -312,6 +318,7 @@
                   <a-input
                     suffix="年"
                     type="number"
+                    min="0"
                     placeholder="请输入房屋土地使用年限"
                     v-model="model.property.landUsageTerm"
                   />
@@ -324,11 +331,7 @@
                   label="房屋竣工时间"
                   prop="property.completionDate"
                 >
-                  <a-date-picker
-                    format="YYYY-MM-DD"
-                    style="width: 100%"
-                    v-model="model.property.completionDate"
-                  />
+                  <a-date-picker format="YYYY-MM-DD" style="width: 100%" v-model="model.property.completionDate" />
                 </a-form-model-item>
               </a-col>
               <a-col :xs="24" :sm="24" :md="12" :xl="8">
@@ -349,12 +352,12 @@
                   :wrapperCol="wrapperRowCol"
                   label="不动产权证"
                   prop="property.housingAge"
-                  :rules="rules.must"
+                  :rules="rules.blur"
                 >
                   <UploadFile
                     v-model="model.property.propertyCert"
-                    :fileIds="model.property.propertyCert"
-                    @setFileValue="file => setFileValue(file, 'property', 'propertyCert')"
+                    :ids="model.property.propertyCert"
+                    @setFileValue="(file) => setFileValue(file, 'property', 'propertyCert')"
                   />
                 </a-form-model-item>
               </a-col>
@@ -383,6 +386,8 @@
                   <a-input
                     suffix="元"
                     type="number"
+                    step="0.01"
+                    min="0"
                     placeholder="请输入评估金额"
                     v-model="model.loan.appraiseAccount"
                   />
@@ -394,22 +399,12 @@
           <div class="card-item" style="margin-bottom: 8px">
             <a-row :gutter="gutter">
               <a-col :xs="24" :sm="24" :md="12" :xl="16">
-                <a-form-model-item
-                  :labelCol="labelRowCol"
-                  :wrapperCol="wrapperRowCol"
-                  label="中介公司"
-                  prop="agency"
-                >
+                <a-form-model-item :labelCol="labelRowCol" :wrapperCol="wrapperRowCol" label="中介公司" prop="agency">
                   <a-input placeholder="请输入中介公司" v-model="model.agency" />
                 </a-form-model-item>
               </a-col>
               <a-col :xs="24" :sm="24" :md="12" :xl="8">
-                <a-form-model-item
-                  :labelCol="labelCol"
-                  :wrapperCol="wrapperCol"
-                  label="经办人"
-                  prop="agent"
-                >
+                <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="经办人" prop="agent">
                   <a-input placeholder="请输入经办人姓名" v-model="model.agent" />
                 </a-form-model-item>
               </a-col>

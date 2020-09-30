@@ -18,7 +18,7 @@
       <a-form-model ref="ruleForm" :model="ruleForm" class="my-form">
         <!-- 基础信息 -->
         <div class="card-wrap">
-          <a-card :bodyStyle="{padding: 0}">
+          <a-card :bodyStyle="{ padding: 0 }">
             <div class="card-item">
               <a-row :gutter="gutter">
                 <a-col :xs="24" :sm="24" :md="12" :xl="12">
@@ -27,10 +27,11 @@
                     :wrapperCol="wrapperCol"
                     label="垫付金额"
                     prop="thirdSum"
-                    :rules="rules.must"
+                    :rules="rules.blur"
                   >
                     <a-input
                       type="number"
+                      step="0.01"
                       suffix="元"
                       v-model="ruleForm.thirdSum"
                       placeholder="请输入垫付金额"
@@ -43,15 +44,11 @@
                     :wrapperCol="wrapperCol"
                     label="姓名"
                     prop="thirdName"
-                    :rules="rules.must"
+                    :rules="rules.blur"
                   >
                     <a-input placeholder="请输入姓名" v-model="ruleForm.thirdName">
                       <a-tooltip slot="addonAfter" title="点击读取信息">
-                        <a-icon
-                          type="idcard"
-                          class="read-card-icon"
-                          @click.native="getIdCardInfo('third')"
-                        />
+                        <a-icon type="idcard" class="read-card-icon" @click.native="getIdCardInfo('third')" />
                       </a-tooltip>
                     </a-input>
                   </a-form-model-item>
@@ -62,7 +59,7 @@
                     :wrapperCol="wrapperCol"
                     label="性别"
                     prop="thirdGender"
-                    :rules="rules.select"
+                    :rules="rules.change"
                   >
                     <a-select placeholder="请选择" v-model="ruleForm.thirdGender">
                       <a-select-option v-for="item in genderList" :key="item.key">{{ item.value }}</a-select-option>
@@ -75,20 +72,30 @@
                     :wrapperCol="wrapperCol"
                     label="身份证号"
                     prop="thirdIdcard"
-                    :rules="rules.must"
+                    :rules="rules.blur"
                   >
                     <a-input placeholder="请输入身份证号码" v-model="ruleForm.thirdIdcard" />
                   </a-form-model-item>
                 </a-col>
                 <a-col :xs="24" :sm="24" :md="12" :xl="12">
-                  <a-form-model-item
-                    :labelCol="labelCol"
-                    :wrapperCol="wrapperCol"
-                    label="身份证有效期"
-                    prop="thirdIdcardValidity"
-                    :rules="rules.must"
-                  >
-                    <a-range-picker format="YYYY-MM-DD" v-model="ruleForm.thirdIdcardValidity" />
+                  <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="身份证有效期" required>
+                    <a-input-group compact>
+                      <a-form-model-item
+                        prop="thirdIdcardStart"
+                        :rules="rules.change"
+                        style="width: 50%; margin-bottom: 0"
+                      >
+                        <a-date-picker
+                          format="YYYY-MM-DD"
+                          v-model="ruleForm.thirdIdcardStart"
+                          placeholder="开始日期"
+                          @change="(date, dateString) => dateChange(date, dateString, 'third')"
+                        />
+                      </a-form-model-item>
+                      <a-form-model-item prop="thirdIdcardEnd" :rules="rules.date" style="width: 50%; margin-bottom: 0">
+                        <a-input v-model="ruleForm.thirdIdcardEnd" placeholder="结束日期" />
+                      </a-form-model-item>
+                    </a-input-group>
                   </a-form-model-item>
                 </a-col>
                 <a-col :xs="24" :sm="24" :md="12" :xl="12">
@@ -97,13 +104,9 @@
                     :wrapperCol="wrapperCol"
                     label="联系电话"
                     prop="thirdPhone"
-                    :rules="rules.must"
+                    :rules="rules.phone"
                   >
-                    <a-input
-                      :max-length="11"
-                      placeholder="请输入11位手机号码"
-                      v-model="ruleForm.thirdPhone"
-                    />
+                    <a-input :max-length="11" placeholder="请输入11位手机号码" v-model="ruleForm.thirdPhone" />
                   </a-form-model-item>
                 </a-col>
               </a-row>
@@ -114,7 +117,7 @@
                     :wrapperCol="wrapperRowCol"
                     label="地址"
                     prop="thirdAddr"
-                    :rules="rules.must"
+                    :rules="rules.blur"
                   >
                     <a-input placeholder="请输入详细地址" v-model="ruleForm.thirdAddr" />
                   </a-form-model-item>
@@ -132,25 +135,25 @@
                   >
                     <a-form-model-item
                       prop="thirdIdcardFront"
-                      :rules="{required: true,message: '请上传身份证人像面',trigger: 'change'}"
+                      :rules="{ required: true, message: '请上传身份证人像面', trigger: 'change' }"
                     >
                       <UploadImg
                         tip="身份证人像面"
                         :isCard1="true"
-                        @setImageValue="file => setImageData(file, 'thirdIdcardBack')"
-                        :imageId="ruleForm.thirdIdcardFront"
+                        :ids="ruleForm.thirdIdcardFront"
+                        @setImageValue="(file) => setImageData(file, 'thirdIdcardFront')"
                         v-model="ruleForm.thirdIdcardFront"
                       />
                     </a-form-model-item>
                     <a-form-model-item
                       prop="thirdIdcardBack"
-                      :rules="{required: true,message: '请上传身份证国徽面',trigger: 'change'}"
+                      :rules="{ required: true, message: '请上传身份证国徽面', trigger: 'change' }"
                     >
                       <UploadImg
                         tip="身份证国徽面"
                         :isCard2="true"
-                        @setImageValue="file => setImageData(file, 'thirdIdcardBack')"
-                        :imageId="ruleForm.thirdIdcardBack"
+                        :ids="ruleForm.thirdIdcardBack"
+                        @setImageValue="(file) => setImageData(file, 'thirdIdcardBack')"
                         v-model="ruleForm.thirdIdcardBack"
                       />
                     </a-form-model-item>
@@ -162,12 +165,12 @@
                     :wrapperCol="wrapperCol"
                     label="垫付申请书"
                     prop="thirdApplication"
-                    :rules="{required: true,message: '请上传垫付申请书',trigger: 'change'}"
+                    :rules="{ required: true, message: '请上传垫付申请书', trigger: 'change' }"
                   >
                     <UploadFile
                       v-model="ruleForm.thirdApplication"
-                      :fileIds="ruleForm.thirdApplication"
-                      @setFileValue="file => setFileValue(file, 'thirdApplication')"
+                      :ids="ruleForm.thirdApplication"
+                      @setFileValue="(file) => setFileValue(file, 'thirdApplication')"
                     />
                   </a-form-model-item>
                 </a-col>
@@ -177,12 +180,12 @@
                     :wrapperCol="wrapperCol"
                     label="进账凭证"
                     prop="thirdReceiptsCert"
-                    :rules="{required: true,message: '请上传进账凭证',trigger: 'change'}"
+                    :rules="{ required: true, message: '请上传进账凭证', trigger: 'change' }"
                   >
                     <UploadFile
                       v-model="ruleForm.thirdReceiptsCert"
-                      :fileIds="ruleForm.thirdReceiptsCert"
-                      @setFileValue="file => setFileValue(file, 'thirdReceiptsCert')"
+                      :ids="ruleForm.thirdReceiptsCert"
+                      @setFileValue="(file) => setFileValue(file, 'thirdReceiptsCert')"
                     />
                   </a-form-model-item>
                 </a-col>
@@ -196,20 +199,16 @@
             <span class="title">收款/打款银行：</span>
             <a-button type="primary" class="mr-8" @click="addBank">添加收款银行卡</a-button>
           </div>
-          <a-card :bodyStyle="{padding: 0}">
-            <div
-              class="card-item"
-              v-for="(bank,bankIndex) in ruleForm.bankAccountList"
-              :key="bankIndex"
-            >
+          <a-card :bodyStyle="{ padding: 0 }">
+            <div class="card-item" v-for="(bank, bankIndex) in ruleForm.bankAccountList" :key="bankIndex">
               <a-row :gutter="gutter">
                 <a-col :xs="24" :sm="24" :md="12" :xl="12">
                   <a-form-model-item
                     :labelCol="labelCol"
                     :wrapperCol="wrapperCol"
                     label="收款人"
-                    :prop="'bankAccountList['+bankIndex+'].accountPersonName'"
-                    :rules="rules.must"
+                    :prop="'bankAccountList[' + bankIndex + '].accountPersonName'"
+                    :rules="rules.blur"
                   >
                     <a-input placeholder="请输入收款人" v-model="bank.accountPersonName" />
                   </a-form-model-item>
@@ -219,15 +218,16 @@
                     :labelCol="labelCol"
                     :wrapperCol="wrapperCol"
                     label="卡号"
-                    :prop="'bankAccountList['+bankIndex+'].bankCardNo'"
-                    :rules="rules.must"
+                    :prop="'bankAccountList[' + bankIndex + '].bankCardNo'"
+                    :rules="rules.bankCardNo"
                   >
                     <a-input placeholder="请输入卡号" :max-length="20" v-model="bank.bankCardNo">
                       <a-tooltip slot="addonAfter" title="点击上传识别">
                         <a-upload
                           name="file"
                           :show-upload-list="false"
-                          :before-upload="getBankInfo"
+                          :before-upload="OCRBeforeUpload"
+                          @change="(info) => getBankInfo(info.file, bankIndex)"
                         >
                           <a-icon type="camera" class="read-card-icon" />
                         </a-upload>
@@ -240,8 +240,8 @@
                     :labelCol="labelCol"
                     :wrapperCol="wrapperCol"
                     label="收款银行"
-                    :prop="'bankAccountList['+bankIndex+'].bankName'"
-                    :rules="rules.must"
+                    :prop="'bankAccountList[' + bankIndex + '].bankName'"
+                    :rules="rules.blur"
                   >
                     <a-input placeholder="请输入收款银行" v-model="bank.bankName" />
                   </a-form-model-item>
@@ -257,24 +257,24 @@
                     required
                   >
                     <a-form-model-item
-                      :prop="'bankAccountList['+bankIndex+'].bankCardFront'"
-                      :rules="{required: true,message: '请上传银行卡正面',trigger: 'change'}"
+                      :prop="'bankAccountList[' + bankIndex + '].bankCardFront'"
+                      :rules="{ required: true, message: '请上传银行卡正面', trigger: 'change' }"
                     >
                       <UploadImg
                         tip="银行卡正面"
-                        @setImageValue="file => setBankImageData(file, bankIndex, 'bankCardFront')"
-                        :imageId="bank.bankCardFront"
+                        :ids="bank.bankCardFront"
+                        @setImageValue="(file) => setBankImageData(file, bankIndex, 'bankCardFront')"
                         v-model="bank.bankCardFront"
                       />
                     </a-form-model-item>
                     <a-form-model-item
-                      :prop="'bankAccountList['+bankIndex+'].bankCardBack'"
-                      :rules="{required: true,message: '请上传银行卡背面',trigger: 'change'}"
+                      :prop="'bankAccountList[' + bankIndex + '].bankCardBack'"
+                      :rules="{ required: true, message: '请上传银行卡背面', trigger: 'change' }"
                     >
                       <UploadImg
                         tip="银行卡背面"
-                        @setImageValue="file => setBankImageData(file, bankIndex, 'bankCardBack')"
-                        :imageId="bank.bankCardBack"
+                        :ids="bank.bankCardBack"
+                        @setImageValue="(file) => setBankImageData(file, bankIndex, 'bankCardBack')"
                         v-model="bank.bankCardBack"
                       />
                     </a-form-model-item>
@@ -309,8 +309,8 @@ export default {
   data() {
     return {
       Urls: {
-        addUrl: '/api/business/temp',
-        editUrl: '/api/business/update/',
+        addUrl: '/biz/api/business/temp',
+        editUrl: '/biz/api/business/update/',
       },
       labelCol: { xxl: { span: 8 }, sm: { span: 8 } },
       wrapperCol: { xxl: { span: 16 }, sm: { span: 16 } },
@@ -334,9 +334,6 @@ export default {
       this.model.isThirdPayment = 1
       if (data.thirdPayment) {
         this.ruleForm = data.thirdPayment
-        if (this.ruleForm.thirdIdcardValidity && typeof this.ruleForm.thirdIdcardValidity == 'string') {
-          this.ruleForm.thirdIdcardValidity = this.ruleForm.thirdIdcardValidity.split(',')
-        }
       }
     },
     beforeOpen() {
@@ -359,78 +356,52 @@ export default {
       }
       this.ruleForm.bankAccountList.splice(k, 1)
     },
+    // 日期格式
+    dateChange(date, dateString, type) {
+      this.ruleForm[`${type}IdcardStart`] = dateString
+    },
     // 获取身份证信息
     async getIdCardInfo(type) {
       let data = await IdCard.setCertificateData()
       console.log('idcard info', data)
-      this.ruleForm[`${type}Name`] = data.Name
-      this.ruleForm[`${type}Gender`] = data.Sex
-      this.ruleForm[`${type}Idcard`] = data.IDNumber
-      this.ruleForm[`${type}IdcardValidity`] = [
-        moment(data.IssuedData).format('YYYY-MM-DD'),
-        moment(data.ValidDate).format('YYYY-MM-DD'),
-      ]
-      this.ruleForm[`${type}Addr`] = data.Address
-      this.$forceUpdate()
+      this.$set(this.ruleForm, `${type}Name`, data.Name)
+      this.$set(this.ruleForm, `${type}Gender`, data.Sex)
+      this.$set(this.ruleForm, `${type}Idcard`, data.IDNumber)
+      this.$set(this.ruleForm, `${type}IdcardStart`, moment(data.IssuedData).format('YYYY-MM-DD'))
+      this.$set(
+        this.ruleForm,
+        `${type}IdcardEnd`,
+        data.ValidDate == '长期' ? '长期' : moment(data.ValidDate).format('YYYY-MM-DD')
+      )
+      this.$set(this.ruleForm, `${type}Addr`, data.Address)
     },
 
     // 获取银行信息
-    async getBankInfo(file) {
-      console.log('银行图片', file)
-      let base64 = await this.getBase64(file)
-      let data = await IdCard.setBankData(base64)
+    async getBankInfo(file, bankIndex) {
+      let data = await IdCard.setBankData(file)
       console.log('bank Info', data)
+      this.$set(this.ruleForm.bankAccountList[bankIndex], 'bankCardNo', data.cardNo)
+      this.$set(this.ruleForm.bankAccountList[bankIndex], 'bankName', data.bankName)
       return false
     },
 
     // 图片验证并设置值
     setImageData(file, field) {
-      this.ruleForm[field] = file
-      this.fileIds.push(field)
+      this.$set(this.ruleForm, `${field}`, file)
+      this.fileIds.push(file)
     },
     // 银行图片并设置值
     setBankImageData(file, k, field) {
-      this.ruleForm.bankAccountList[k][field] = file
-      this.$forceUpdate()
-      this.fileIds.push(field)
+      this.$set(this.ruleForm.bankAccountList[k], `${field}`, file)
+      this.fileIds.push(file)
     },
     // 多图片上传
-    setFileValue(fileList, fileId) {
-      let ids = fileList.map((item, index) => {
-        this.fileIds.push(item.id)
-        return item.id
-      })
-      this.ruleForm[fileId] = ids.join()
+    setFileValue(ids, field) {
+      console.log('多', ids)
+      this.fileIds = [this.fileIds, ...ids]
+      this.$set(this.ruleForm, `${field}`, ids.join())
     },
     beforeSubmit(form) {
-      if (this.ruleForm.thirdIdcardValidity) {
-        this.ruleForm.thirdIdcardValidity = this.ruleForm.thirdIdcardValidity.join()
-      }
-      if (form.salerList && form.salerList.length > 0) {
-        form.salerList.map((item, index) => {
-          if (item.salerIdcardValidity) {
-            item.salerIdcardValidity = item.salerIdcardValidity.join()
-          }
-          if (item.assignor && item.assignor.personIdcardValidity) {
-            item.assignor.personIdcardValidity = item.assignor.personIdcardValidity.join()
-          }
-          if (item.guardianList.length > 0) {
-            item.guardianList.map((key, k) => {
-              key.personIdcardValidity = key.personIdcardValidity.join()
-            })
-          }
-        })
-      }
-      if (form.buyerList && form.buyerList.length > 0) {
-        form.buyerList.map((item, index) => {
-          if (item.buyerIdcardValidity) {
-            item.buyerIdcardValidity = item.buyerIdcardValidity.join()
-          }
-          if (item.spouseIdcardValidity) {
-            item.spouseIdcardValidity.join()
-          }
-        })
-      }
       form.thirdPayment = this.ruleForm
       return form
     },

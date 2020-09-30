@@ -1,5 +1,4 @@
 import axios from 'axios'
-import qs from 'qs'
 import {
   message,
   Modal
@@ -28,7 +27,7 @@ export default {
     },
     11: {
       mean: "读卡操作失败",
-      message: "未检测到二代身份证阅读器！",
+      message: "未检测到二代身份证！",
       type: "error"
     },
     20: {
@@ -94,7 +93,7 @@ export default {
               resolve(result.Certificate)
             }
           } else if (this.interfaceResult[res.data.ret]) {
-            message.error(this.interfaceResult[res.data.ret].mean)
+            message.error(this.interfaceResult[res.data.ret].message)
           }
         }).catch((err) => {
           this.downloadDrive()
@@ -135,77 +134,28 @@ export default {
     });
   },
   // 设置银行信息
-  setBankData(img) {
-    const tencentcloud = require("tencentcloud-sdk-nodejs");
-
-    const OcrClient = tencentcloud.ocr.v20181119.Client;
-    const models = tencentcloud.ocr.v20181119.Models;
-
-    const Credential = tencentcloud.common.Credential;
-    const ClientProfile = tencentcloud.common.ClientProfile;
-    const HttpProfile = tencentcloud.common.HttpProfile;
-
-    let cred = new Credential("AKID948vQyHH2WjgLinjKYVfX7PQBgurYptf", "d06XlMjqgFTBdruhCPKxKhdJ6cqrb6KG");
-    let httpProfile = new HttpProfile();
-    httpProfile.endpoint = "ocr.tencentcloudapi.com";
-    httpProfile.reqHeaders = {
-      mode: 'no-cors'
-    };
-    let clientProfile = new ClientProfile();
-    clientProfile.httpProfile = httpProfile;
-    let client = new OcrClient(cred, "ap-guangzhou", clientProfile);
-
-    let req = new models.BankCardOCRRequest();
-
-    let params = '{\"ImageBase64\":\"' + img + '\"}'
-    req.from_json_string(params);
-
-    client.BankCardOCR(req, function (errMsg, response) {
-      if (errMsg) {
-        console.log(errMsg);
-        return;
-      }
-      console.log('12121', response.to_json_string());
-    });
-
-
-
-
-
-
-
-
-    /* var dataObj = qs.stringify({
-      Action: 'BankCardOCR',
-      Version: '2018-11-19',
-      Region: 'ap-beijing',
-      ImageBase64: img,
-      SecretId: 'AKID948vQyHH2WjgLinjKYVfX7PQBgurYptf',
-      SecretKey: 'd06XlMjqgFTBdruhCPKxKhdJ6cqrb6KG'
-    })
+  setBankData(file) {
     return new Promise((resolve, reject) => {
+      const formData = new FormData()
+      formData.append('file', file)
       axios({
-        url: '/ocr',
+        url: process.env.VUE_APP_API_BASE_URL + '/ocr/api/ocr/bank',
         method: 'post',
         headers: {
-          'content-type': 'application/x-www-form-urlencoded'
+          'Content-Type': 'multipart/form-data',
         },
-        data: dataObj
+        timeout: 0,
+        data: formData
       }).then(res => {
-        console.log('银行信息', res.data)
-        if (!res.data.dev) {
-          let data = res.data.replace(/\\/g, "/");
-          let result = JSON.parse(data);
-          if (result.ret == 0) {
-            resolve(result.Certificate)
-          }
-        } else if (this.interfaceResult[res.data.ret]) {
-          message.error(this.interfaceResult[res.data.ret].mean)
+        if (res.data.code == 0 && res.data.data.validated) {
+          resolve(res.data.data)
+        } else {
+          message.error('信息识别失败')
         }
       }).catch((err) => {
-        // this.downloadDrive()
+        message.error('服务发生错误，请稍候重试')
       })
-    }) */
+    })
   },
 
 }

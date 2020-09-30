@@ -35,7 +35,7 @@ router.beforeEach((to, from, next) => {
       NProgress.done()
     } else {
       // check login user.roles is null
-      if (store.getters.roles.length === 0) {
+      /* if (store.getters.roles.length === 0) {
         const roles = {
           permissionList: ['table', 'permission', 'user', 'profile', 'list']
         }
@@ -50,7 +50,8 @@ router.beforeEach((to, from, next) => {
         })
       } else {
         next()
-      }
+      } */
+      next()
     }
   } else {
     if (whiteList.includes(to.name)) {

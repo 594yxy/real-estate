@@ -3,10 +3,15 @@ import {
 } from '@/utils/request';
 const columns = [{
   title: '编号',
+  fixed: 'left',
   dataIndex: 'id'
 }, {
   title: '流程节点',
-  dataIndex: 'procStatusDesc'
+  dataIndex: 'procNodeDesc'
+}, {
+  title: '贷款品种',
+  align: 'center',
+  dataIndex: 'subTypeDesc'
 }, {
   title: '业务类型',
   align: 'center',
@@ -14,19 +19,27 @@ const columns = [{
 }, {
   title: '卖方',
   align: 'center',
-  dataIndex: 'salers'
+  dataIndex: 'salers',
+  customRender: (text) => `${text || ""}`
 }, {
   title: '买方',
   align: 'center',
-  dataIndex: 'buyers'
+  dataIndex: 'buyers',
+  customRender: (text) => `${text || ""}`
 }, {
   title: '贷款金额',
   align: 'center',
-  dataIndex: 'statusDesc',
-  customRender: (text, record, index) => ""
+  dataIndex: 'loanSum',
+  scopedSlots: {
+    customRender: 'loanSum'
+  }
 }, {
   title: '产权证号',
   dataIndex: 'propertyNo'
+}, {
+  title: '承办部门',
+  align: 'center',
+  dataIndex: 'responsibleDept'
 }, {
   title: '评估公司',
   dataIndex: 'appraisers'
@@ -36,54 +49,34 @@ const columns = [{
   dataIndex: 'createTime'
 }]
 
-const statusMap = {
-  'WAIT': {
-    status: 'default',
-    text: '未达标'
-  },
-  'AUDIT': {
-    status: 'default',
-    text: '待审核'
-  },
-  'REJECT': {
-    status: 'error',
-    text: '已拒绝'
-  },
-  'PASS': {
-    status: 'success',
-    text: '已通过'
-  }
-}
+const procNodes = [{
+  key: '',
+  value: '新建业务'
+}]
 
 var indexMixin = {
   data() {
     return {
       Urls: {
-        listUrl: '/api/business/all/page'
+        listUrl: '/biz/api/business/all/page',
+        orgListUrl: '/auth/api/org/list'
       },
       columns,
-      statusMap,
+      procNodes,
       valueStyle: {
         fontSize: '14px'
-      }
+      },
+      loanTypeList: [],
+      busTypeList: [],
+      orgList: []
     }
   },
-  filters: {
-    statusFilter(type) {
-      if (!type) {
-        return ''
-      }
-      return statusMap[type].text
-    },
-    statusTypeFilter(type) {
-      if (!type) {
-        return ''
-      }
-      return statusMap[type].status
-    }
-  },
+  filters: {},
   created() {
     this.getList();
+    this.getDictData('loan_type', 'loanTypeList')
+    this.getDictData('business_type', 'busTypeList')
+    this.getOrgList()
   },
 
   methods: {
@@ -95,14 +88,30 @@ var indexMixin = {
       })
     },
     handleEdit() {
-      console.log(this.selectionRows)
+      if (this.selectedRowKeys.length == 0) {
+        this.$message.warning('请选择你要进行操作的数据!');
+        return false
+      }
       this.$router.push({
         path: '/business/list/add',
         query: {
           id: this.selectedRowKeys.join()
         }
       })
-    }
+    },
+    // 部门列表
+    getOrgList() {
+      axios({
+        url: this.Urls.orgListUrl,
+        method: 'get'
+      }).then(res => {
+        if (res.code == 0) {
+          this.orgList = res.data.records || [];
+        } else {
+          this.$notification.error(res.msg)
+        }
+      })
+    },
   }
 };
 export default indexMixin;

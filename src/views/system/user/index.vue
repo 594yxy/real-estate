@@ -4,28 +4,21 @@
       <div class="table-page-search-wrapper">
         <a-form layout="inline">
           <a-row :gutter="24">
-            <a-col :md="8" :sm="24">
+            <a-col :md="10" :sm="24">
               <a-form-item label="关键词">
-                <a-input allowClear v-model="queryParam.condition.keyWord" placeholder="用户名/手机号" />
+                <a-input allowClear v-model.trim="queryParam.condition.keyWord" placeholder="用户名/手机号" />
               </a-form-item>
             </a-col>
-            <a-col :md="8" :sm="24">
-              <a-form-item label="加入时间" class="date-picker-box">
-                <j-date @start="handleStartTime" @end="handleEndTime" v-if="isShowDate"></j-date>
-              </a-form-item>
-            </a-col>
-            <a-col :md="5" :sm="24">
-              <a-form-item label="审核状态">
+            <a-col :md="6" :sm="24">
+              <a-form-item label="用户状态">
                 <a-select allowClear v-model="queryParam.condition.auditStatus" placeholder="请选择">
-                  <a-select-option
-                    v-for="item in Object.keys(statusMap)"
-                    :value="item"
-                    :key="item"
-                  >{{statusMap[item].text}}</a-select-option>
+                  <a-select-option v-for="item in userStatusList" :value="item.key" :key="item.key">{{
+                    item.name
+                  }}</a-select-option>
                 </a-select>
               </a-form-item>
             </a-col>
-            <a-col :md="!advanced && 3 || 24" :sm="24">
+            <a-col :md="(!advanced && 3) || 24" :sm="24">
               <span class="table-page-search-submitButtons">
                 <a-button type="primary" @click="handleSearch">查询</a-button>
                 <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
@@ -51,6 +44,13 @@
           </a-button>
         </a-dropdown>
       </div>-->
+      <div class="table-operator">
+        <a-button type="primary" icon="plus" @click="handleAdd" class="mr-8">新增用户</a-button>
+        <a-button-group>
+          <a-button icon="edit" @click="handleEdit">编辑</a-button>
+          <a-button icon="delete" @click="handleDel">删除</a-button>
+        </a-button-group>
+      </div>
       <a-table
         :columns="columns"
         :dataSource="dataSource"
@@ -58,49 +58,28 @@
         rowKey="id"
         :pagination="pagination"
         size="middle"
+        :custom-row="rowClick"
+        :row-selection="rowSelection"
       >
-        <template v-for="col in ['balance', 'allAmount']" :slot="col" slot-scope="text">
-          <div :key="col">
-            <template>
-              <a-statistic prefix="￥" :value="text || 0" :value-style="valueStyle"></a-statistic>
-            </template>
-          </div>
-        </template>
-        <span
-          slot="auditStatus"
-          slot-scope="text,record"
-          :class="text | statusTypeFilter"
-        >{{record.auditStatusDesc}}</span>
-
-        <span slot="action" slot-scope="text, record">
-          <template>
-            <a @click="handleAccountType(record)">设置角色</a>
-            <a-divider type="vertical" />
-            <a @click="handleDel(record)">删除</a>
-          </template>
-        </span>
       </a-table>
 
-      <audit-form ref="detailForm" @ok="afterSubmit" />
+      <!-- 表单 -->
+      <create-form ref="modalForm" @ok="afterSubmit" />
     </a-card>
   </page-header-wrapper>
 </template>
 
 <script>
 import baseMixin from '@/components/Mixins/base'
-import indexMixin from './mixin/index'
-import { Ellipsis } from '@/components'
-import AuditForm from './modules/AuditForm'
-import JDate from '@/components/JDate/index'
+import indexMixin from './modules/index'
+import CreateForm from './modules/CreateForm'
 import TableToolbar from '@/components/TableToolbar/index'
 
 export default {
   name: 'UserList',
   mixins: [baseMixin, indexMixin],
   components: {
-    Ellipsis,
-    AuditForm,
-    JDate,
+    CreateForm,
     TableToolbar,
   },
 }

@@ -86,9 +86,13 @@ export default {
       confirmLoading: false,
     }
   },
-  created() {},
+  created() {
+    let actKey = localStorage.getItem('bisActKey') || 1
+    console.log('main', actKey)
+    this.activeKey = Number(actKey)
+  },
   mounted() {
-    let businessId = this.$route.query.id || this.model.id
+    let businessId = this.$route.query.id
     if (businessId) {
       this.fillForm(businessId)
     }
@@ -153,6 +157,7 @@ export default {
     },
     tabChange(key) {
       console.log('改变key', this.business)
+      localStorage.setItem('bisActKey', key)
     },
     prevStep() {
       if (this.activeKey > 0) {
@@ -162,6 +167,9 @@ export default {
     setModel(data) {
       this.business = data
     },
+  },
+  beforeDestroy() {
+    localStorage.removeItem('bisActKey')
   },
 }
 </script>

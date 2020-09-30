@@ -59,7 +59,13 @@
                     </a-form-model-item>
                   </a-col>
                   <a-col :xs="24" :sm="24" :md="12" :xl="8">
-                    <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="身份证有效期" required>
+                    <a-form-model-item
+                      :labelCol="labelCol"
+                      :wrapperCol="wrapperCol"
+                      label="身份证有效期"
+                      required
+                      style="margin-bottom: 0"
+                    >
                       <a-input-group compact>
                         <a-form-model-item
                           :prop="'buyerList[' + index + '].buyerIdcardStart'"
@@ -170,6 +176,7 @@
                       :labelCol="labelCol"
                       :wrapperCol="wrapperCol"
                       label="婚姻证明"
+                      class="image-box"
                       required
                       :prop="'buyerList[' + index + '].buyerMarriageCert'"
                       :rules="{ required: true, message: '请上传结婚证或者离婚证', trigger: 'change' }"
@@ -257,6 +264,7 @@
                   label="单位地址"
                   class="row-letter"
                   required
+                  style="margin-bottom: 0"
                 >
                   <a-row :gutter="gutter">
                     <a-col :xs="24" :sm="24" :md="12" :xl="5">
@@ -305,14 +313,17 @@
                     </a-col>
                     <a-col :xs="24" :sm="24" :md="12" :xl="8">
                       <a-form-model-item :prop="'buyerList[' + index + '].buyerWorkplaceAddr'" :rules="rules.blur">
-                        <a-input placeholder="道路、门牌号、小区、楼栋号、单元室等" v-model.lazy="pane.buyerWorkplaceAddr" />
+                        <a-input
+                          placeholder="道路、门牌号、小区、楼栋号、单元室等"
+                          v-model.lazy="pane.buyerWorkplaceAddr"
+                        />
                       </a-form-model-item>
                     </a-col>
                   </a-row>
                 </a-form-model-item>
               </div>
 
-              <div class="card-item" style="margin-bottom: 10px">
+              <div class="card-item">
                 <a-row :gutter="gutter">
                   <a-col :xs="24" :sm="24" :md="24" :xl="24">
                     <h4 style="line-height: 40px" class="row-tit">公积金信息：</h4>
@@ -396,7 +407,13 @@
                     </a-form-model-item>
                   </a-col>
                   <a-col :xs="24" :sm="24" :md="12" :xl="8">
-                    <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="身份证有效期" required>
+                    <a-form-model-item
+                      :labelCol="labelCol"
+                      :wrapperCol="wrapperCol"
+                      label="身份证有效期"
+                      required
+                      style="margin-bottom: 0"
+                    >
                       <a-input-group compact>
                         <a-form-model-item
                           :prop="'buyerList[' + index + '].spouseIdcardStart'"
@@ -543,6 +560,7 @@
                   :wrapperCol="wrapperSingleCol"
                   label="单位地址"
                   class="row-letter"
+                  style="margin-bottom: 0"
                 >
                   <a-row :gutter="gutter">
                     <a-col :xs="24" :sm="24" :md="12" :xl="5">
@@ -601,7 +619,7 @@
                 </a-form-model-item>
               </div>
 
-              <div class="card-item" style="margin-bottom: 10px">
+              <div class="card-item">
                 <a-row :gutter="gutter">
                   <a-col :xs="24" :sm="24" :md="24" :xl="24">
                     <h4 style="line-height: 40px" class="row-tit">公积金信息：</h4>

@@ -14,11 +14,6 @@
                 <a-input allowClear v-model="queryParam.condition.personName" placeholder="请输入买方或者卖方的姓名" />
               </a-form-item>
             </a-col>
-            <a-col :xl="12" :md="24" :sm="24">
-              <a-form-item label="办理时间" class="date-picker-box">
-                <j-date @start="handleStartTime" @end="handleEndTime" v-if="isShowDate"></j-date>
-              </a-form-item>
-            </a-col>
             <a-col :xl="6" :md="12" :sm="24">
               <a-form-item label="房产证号">
                 <a-input allowClear v-model="queryParam.condition.propertyNo" placeholder="请输入房产证号" />
@@ -26,7 +21,7 @@
             </a-col>
             <a-col :xl="6" :md="12" :sm="24">
               <a-form-item label="身份证号">
-                <a-input allowClear v-model="queryParam.condition.keyWord" placeholder="请输入身份证号" />
+                <a-input allowClear v-model="queryParam.condition.personIdcard" placeholder="请输入身份证号" />
               </a-form-item>
             </a-col>
             <a-col :xl="6" :md="12" :sm="24">
@@ -70,7 +65,12 @@
                 <a-input allowClear v-model="queryParam.condition.appraisers" placeholder="请输入评估公司" />
               </a-form-item>
             </a-col>
-            <a-col :xl="6" :md="24" :sm="24">
+            <a-col :xl="10" :md="24" :sm="24">
+              <a-form-item label="办理时间" class="date-picker-box">
+                <j-date @start="handleStartTime" @end="handleEndTime" v-if="isShowDate"></j-date>
+              </a-form-item>
+            </a-col>
+            <a-col :xl="8" :md="24" :sm="24">
               <span class="table-page-search-submitButtons" style="float:right; overflow: 'hidden">
                 <a-button type="primary" @click="handleSearch">查询</a-button>
                 <a-button style="margin-left: 8px" @click="searchReset">重置</a-button>
@@ -85,8 +85,6 @@
           <a-button @click="handleEdit">编辑</a-button>
           <a-button>提交</a-button>
           <a-button>转移</a-button>
-          <a-button>提交财务入账</a-button>
-          <a-button>提交财务划款</a-button>
           <a-button>申请终止</a-button>
         </a-button-group>
       </div>

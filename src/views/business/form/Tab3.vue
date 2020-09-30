@@ -4,7 +4,7 @@
       <div class="card-wrap">
         <a-card :bodyStyle="{ padding: 0 }">
           <LoanAmountCal ref="loadModal" />
-          <div class="card-item" style="margin-bottom: 8px">
+          <div class="card-item">
             <a-row :gutter="gutter">
               <div class="loan-limit">
                 <a-button type="primary" @click="handleCalculate">计算贷款额度</a-button>
@@ -63,7 +63,7 @@
             </a-row>
           </div>
           <!-- 贷款信息 -->
-          <div class="card-item" style="margin-bottom: 8px">
+          <div class="card-item">
             <a-row :gutter="gutter">
               <a-col :xs="24" :sm="24" :md="12" :xl="8">
                 <a-form-model-item
@@ -195,7 +195,7 @@
             </a-row>
           </div>
           <!-- 监管账户 -->
-          <div class="card-item" style="margin-bottom: 8px" v-if="model.loan.loanType != '02'">
+          <div class="card-item" v-if="model.loan.loanType != '02'">
             <a-row :gutter="gutter">
               <a-col :xs="24" :sm="24" :md="12" :xl="8">
                 <a-form-model-item
@@ -224,7 +224,7 @@
             </a-row>
           </div>
           <!-- 房产信息 -->
-          <div class="card-item" style="margin-bottom: 8px">
+          <div class="card-item">
             <a-row :gutter="gutter">
               <a-col :xs="24" :sm="24" :md="12" :xl="8">
                 <a-form-model-item
@@ -364,7 +364,7 @@
             </a-row>
           </div>
           <!-- 评估信息 -->
-          <div class="card-item" style="margin-bottom: 8px">
+          <div class="card-item">
             <a-row :gutter="gutter">
               <a-col :xs="24" :sm="24" :md="12" :xl="16">
                 <a-form-model-item
@@ -396,7 +396,7 @@
             </a-row>
           </div>
           <!-- 中介 -->
-          <div class="card-item" style="margin-bottom: 8px">
+          <div class="card-item">
             <a-row :gutter="gutter">
               <a-col :xs="24" :sm="24" :md="12" :xl="16">
                 <a-form-model-item :labelCol="labelRowCol" :wrapperCol="wrapperRowCol" label="中介公司" prop="agency">

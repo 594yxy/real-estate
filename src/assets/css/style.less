@@ -226,10 +226,6 @@
     margin-bottom: 0;
   }
 
-  .ant-form-item {
-    margin-bottom: 10px;
-  }
-
   .form-btn {
     button {
       min-width: 80px;
@@ -243,7 +239,10 @@
 
   .ant-form-item {
     display: inline-block;
-    margin-bottom: 0;
+
+    .ant-form-item-control {
+      line-height: 0;
+    }
   }
 }
 
@@ -330,7 +329,7 @@
 
   .card-item {
     position: relative;
-    padding: 18px 18px 0;
+    padding: 24px 18px 0;
     border-top: 1px solid #e8e8e8;
 
     &:hover {

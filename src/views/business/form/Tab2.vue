@@ -64,7 +64,13 @@
                     </a-form-model-item>
                   </a-col>
                   <a-col :xs="24" :sm="24" :md="12" :xl="8">
-                    <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="身份证有效期" required>
+                    <a-form-model-item
+                      :labelCol="labelCol"
+                      :wrapperCol="wrapperCol"
+                      label="身份证有效期"
+                      required
+                      style="margin-bottom: 0"
+                    >
                       <a-input-group compact>
                         <a-form-model-item
                           :prop="'salerList[' + index + '].salerIdcardStart'"
@@ -206,7 +212,13 @@
                     </a-form-model-item>
                   </a-col>
                   <a-col :xs="24" :sm="24" :md="12" :xl="8">
-                    <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="身份证有效期" required>
+                    <a-form-model-item
+                      :labelCol="labelCol"
+                      :wrapperCol="wrapperCol"
+                      label="身份证有效期"
+                      required
+                      style="margin-bottom: 0"
+                    >
                       <a-input-group compact>
                         <a-form-model-item
                           :prop="'salerList[' + index + '].assignor.personIdcardStart'"
@@ -296,6 +308,7 @@
                       :labelCol="labelCol"
                       :wrapperCol="wrapperCol"
                       label="委托证明"
+                      class="image-box"
                       :prop="'salerList[' + index + '].assignor.personCert'"
                       :rules="{ required: true, message: '请上传委托证明', trigger: 'change' }"
                     >
@@ -367,7 +380,13 @@
                     </a-form-model-item>
                   </a-col>
                   <a-col :xs="24" :sm="24" :md="12" :xl="8">
-                    <a-form-model-item :labelCol="labelCol" :wrapperCol="wrapperCol" label="身份证有效期" required>
+                    <a-form-model-item
+                      :labelCol="labelCol"
+                      :wrapperCol="wrapperCol"
+                      label="身份证有效期"
+                      required
+                      style="margin-bottom: 0"
+                    >
                       <a-input-group compact>
                         <a-form-model-item
                           :prop="'salerList[' + index + '].guardianList[' + keyIndex + '].personIdcardStart'"
@@ -464,6 +483,7 @@
                       :labelCol="labelCol"
                       :wrapperCol="wrapperCol"
                       label="监护人证明"
+                      class="image-box"
                       :prop="'salerList[' + index + '].guardianList[' + keyIndex + '].personCert'"
                       :rules="{ required: true, message: '请上传监护人证明', trigger: 'change' }"
                     >

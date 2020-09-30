@@ -56,7 +56,7 @@ const user = {
             storage.set(ACCESS_TOKEN, result.token, 7 * 24 * 60 * 60 * 1000)
             storage.set('nickName', result.user.name)
             localStorage.setItem('userId', result.user.userId)
-            localStorage.setItem('mark', result.user.detail.roles.mark)
+            localStorage.setItem('mark', result.user.detail.roles[0].mark)
             commit('SET_TOKEN', result.token)
             resolve()
           } else {
@@ -98,13 +98,14 @@ const user = {
           storage.remove(ACCESS_TOKEN)
           storage.remove('nickName')
           localStorage.removeItem('userId')
+          localStorage.removeItem('mark')
           resolve()
         }).finally(() => {
           commit('SET_TOKEN', '')
           commit('SET_ROLES', [])
           storage.remove(ACCESS_TOKEN)
           storage.remove('nickName')
-          localStorage.removeItem('userId')
+          localStorage.removeItem('mark')
         })
       })
     }
